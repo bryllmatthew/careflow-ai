@@ -11,7 +11,10 @@ data model rather than bolted together as separate features.
 
 **Phase 1 — Foundation. In progress.**
 
-Task 1.1 (repository scaffold) is complete. The application has no schema, auth, or features yet.
+Tasks 1.1-1.6 are complete: repository scaffold, the Supabase client layer, the
+tenancy/roles/permissions schema, and the RLS authorization core, all verified
+by a 24-case pgTAP suite (`pnpm test:rls`). No auth flows, application shell,
+or business features yet.
 
 See `docs/MVP_ROADMAP.md` for the phase plan and `CLAUDE.md` for engineering rules.
 
@@ -53,6 +56,7 @@ pnpm dev                     # http://localhost:3000
 | `pnpm db:reset`                           | Re-apply all migrations from scratch                            |
 | `pnpm db:diff`                            | Diff local schema against migrations                            |
 | `pnpm db:types`                           | Regenerate `lib/db/types.generated.ts`                          |
+| `pnpm test:rls`                           | Run the pgTAP authorization suite — the merge gate              |
 
 ## Security posture
 
@@ -74,8 +78,8 @@ app/          routes — (auth), (onboarding), (app) shell, api/
 components/   ui/ (shadcn), layout/, patterns/ (shared building blocks)
 features/     per-domain components and queries
 lib/          supabase/, auth/, db/, validation/, providers/, ai/
-supabase/     migrations/ and seed data
-tests/        unit/, rls/ (pgTAP), e2e/ (Playwright)
+supabase/     migrations/ and tests/ (pgTAP, run via `pnpm test:rls`)
+tests/        unit/ and e2e/ (Playwright)
 docs/         the 8 product & architecture specifications
 ```
 

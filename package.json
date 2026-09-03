@@ -18,7 +18,8 @@
     "db:status": "supabase status",
     "db:reset": "supabase db reset",
     "db:diff": "supabase db diff",
-    "db:types": "supabase gen types typescript --local > lib/db/types.generated.ts"
+    "db:types": "supabase gen types typescript --local > lib/db/types.generated.ts",
+    "test:rls": "supabase test db --local"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.5",
