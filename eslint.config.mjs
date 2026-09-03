@@ -32,7 +32,18 @@ const eslintConfig = defineConfig([
   {
     // Admin tooling and migrations are the one place the service-role key belongs.
     name: "careflow/service-role-client-allowlist",
-    files: ["scripts/**/*.{ts,tsx,mts,mjs}", "supabase/**/*.{ts,mts,mjs}"],
+    files: [
+      "scripts/**/*.{ts,tsx,mts,mjs}",
+      "supabase/**/*.{ts,mts,mjs}",
+      // The one request-path exception: inviting a brand-new user requires
+      // GoTrue's admin API (auth.admin.inviteUserByEmail), which has no SQL
+      // equivalent. The action itself verifies the caller's own permission
+      // via the normal RLS-respecting client BEFORE touching this one --
+      // see the file itself and supabase/migrations/*_invite_member_rpc.sql.
+      // Kept to this single file, not a directory, so the admin client's
+      // use stays enumerable rather than becoming a habit.
+      "app/(app)/settings/users/actions.ts",
+    ],
     rules: {
       "no-restricted-imports": "off",
     },

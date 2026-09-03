@@ -21,7 +21,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(36);
+select plan(43);
 
 -- ----------------------------------------------------------------------------
 -- Structural assertions (Task 1.6 / CLAUDE.md "Non-negotiable security rules")
@@ -463,6 +463,96 @@ select is(
     where organization_id = current_setting('fx.rpc_org')::uuid and action = 'organization.created'),
   1,
   'create_organization writes an audit_logs entry'
+);
+
+-- ----------------------------------------------------------------------------
+-- public.invite_member (migration 0008): still acting as admin_a, owner of
+-- fx.rpc_org. fx.stranger has no membership anywhere in the fixture, making
+-- it a clean invite target.
+-- ----------------------------------------------------------------------------
+
+select public.invite_member(
+  current_setting('fx.rpc_org')::uuid,
+  current_setting('fx.stranger')::uuid,
+  (select id from public.roles where key = 'receptionist' and organization_id is null)
+) as invite_membership_id \gset
+
+select is(
+  (select status from public.organization_memberships where id = :'invite_membership_id'::uuid),
+  'invited',
+  'invite_member creates a membership with status=''invited'''
+);
+
+select is(
+  (select r.key
+     from public.user_roles ur
+     join public.roles r on r.id = ur.role_id
+    where ur.user_id = current_setting('fx.stranger')::uuid
+      and ur.organization_id = current_setting('fx.rpc_org')::uuid),
+  'receptionist',
+  'invite_member grants the requested initial role in the same call'
+);
+
+select throws_ok(
+  format($sql$select public.invite_member(%L::uuid, %L::uuid, null)$sql$,
+         current_setting('fx.rpc_org'), current_setting('fx.stranger')),
+  '23505',
+  null,
+  'invite_member refuses to invite someone who is already a member'
+);
+
+select pg_temp.act_as('receptionist_a');
+
+select throws_ok(
+  format($sql$select public.invite_member(%L::uuid, %L::uuid, null)$sql$,
+         current_setting('fx.org_a'), current_setting('fx.stranger')),
+  '42501',
+  null,
+  'invite_member rejects an actor with no users.invite grant'
+);
+
+-- ----------------------------------------------------------------------------
+-- app.shares_active_org (migration 0010 regression): admin_a just invited
+-- fx.stranger (status='invited', not yet 'active') -- the inviter must be
+-- able to see that profile (name/email), which is exactly what broke before
+-- this migration.
+-- ----------------------------------------------------------------------------
+
+select pg_temp.act_as('admin_a');
+
+select ok(
+  app.shares_active_org(current_setting('fx.stranger')::uuid),
+  'an active member can see the profile of someone they invited who has not yet accepted (migration 0010 regression)'
+);
+
+-- ----------------------------------------------------------------------------
+-- public.accept_invite (migration 0009): a narrow self-service exception to
+-- "an actor can never change their own status". fx.stranger has a pending
+-- invite to fx.rpc_org from the block above.
+-- ----------------------------------------------------------------------------
+
+select pg_temp.act_as('stranger');
+
+select public.accept_invite(current_setting('fx.rpc_org')::uuid);
+
+select is(
+  (select status from public.organization_memberships
+    where organization_id = current_setting('fx.rpc_org')::uuid
+      and user_id = current_setting('fx.stranger')::uuid),
+  'active',
+  'accept_invite moves the caller''s own membership from invited to active'
+);
+
+-- suspended_a's status in fx.org_a is 'suspended', not 'invited' -- proves
+-- this RPC cannot be used to self-reverse a suspension, which is exactly
+-- the hole set_membership_status()'s self-change block exists to close.
+select pg_temp.act_as('suspended_a');
+
+select throws_ok(
+  format('select public.accept_invite(%L::uuid)', current_setting('fx.org_a')),
+  '23514',
+  null,
+  'accept_invite cannot be used to self-reverse a suspension (only invited -> active, never suspended -> active)'
 );
 
 -- ----------------------------------------------------------------------------

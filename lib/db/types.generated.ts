@@ -402,6 +402,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_invite: { Args: { p_organization_id: string }; Returns: undefined }
       create_organization: {
         Args: {
           p_business_type?: string
@@ -426,6 +427,14 @@ export type Database = {
           p_permission: string
         }
         Returns: boolean
+      }
+      invite_member: {
+        Args: {
+          p_organization_id: string
+          p_role_id?: string
+          p_user_id: string
+        }
+        Returns: string
       }
       my_permissions: { Args: { p_organization_id: string }; Returns: string[] }
       revoke_user_role: { Args: { p_user_role_id: string }; Returns: undefined }
