@@ -17,16 +17,16 @@ See `docs/MVP_ROADMAP.md` for the phase plan and `CLAUDE.md` for engineering rul
 
 ## Stack
 
-| Layer | Choice |
-| --- | --- |
-| Framework | Next.js 16 (App Router, Turbopack) |
-| Language | TypeScript, `strict` + `noUncheckedIndexedAccess` |
-| Styling | Tailwind CSS v4 |
-| Components | shadcn/ui (Radix base) |
-| Database / Auth / Storage | Supabase (PostgreSQL) |
-| Data access | `@supabase/ssr` carrying the end user's JWT, so RLS applies |
-| Migrations | Raw SQL in `supabase/migrations/`, via the Supabase CLI |
-| Package manager | pnpm |
+| Layer                     | Choice                                                      |
+| ------------------------- | ----------------------------------------------------------- |
+| Framework                 | Next.js 16 (App Router, Turbopack)                          |
+| Language                  | TypeScript, `strict` + `noUncheckedIndexedAccess`           |
+| Styling                   | Tailwind CSS v4                                             |
+| Components                | shadcn/ui (Radix base)                                      |
+| Database / Auth / Storage | Supabase (PostgreSQL)                                       |
+| Data access               | `@supabase/ssr` carrying the end user's JWT, so RLS applies |
+| Migrations                | Raw SQL in `supabase/migrations/`, via the Supabase CLI     |
+| Package manager           | pnpm                                                        |
 
 ## Getting started
 
@@ -41,18 +41,18 @@ pnpm dev                     # http://localhost:3000
 
 ## Scripts
 
-| Script | Purpose |
-| --- | --- |
-| `pnpm dev` | Development server |
-| `pnpm build` | Production build (also regenerates Next's route types) |
-| `pnpm verify` | `typecheck` + `lint` + `format:check` — run before every commit |
-| `pnpm typecheck` | `tsc --noEmit` |
-| `pnpm lint` / `lint:fix` | ESLint |
-| `pnpm format` / `format:check` | Prettier |
-| `pnpm db:start` / `db:stop` / `db:status` | Local Supabase stack |
-| `pnpm db:reset` | Re-apply all migrations from scratch |
-| `pnpm db:diff` | Diff local schema against migrations |
-| `pnpm db:types` | Regenerate `lib/db/types.generated.ts` |
+| Script                                    | Purpose                                                         |
+| ----------------------------------------- | --------------------------------------------------------------- |
+| `pnpm dev`                                | Development server                                              |
+| `pnpm build`                              | Production build (also regenerates Next's route types)          |
+| `pnpm verify`                             | `typecheck` + `lint` + `format:check` — run before every commit |
+| `pnpm typecheck`                          | `tsc --noEmit`                                                  |
+| `pnpm lint` / `lint:fix`                  | ESLint                                                          |
+| `pnpm format` / `format:check`            | Prettier                                                        |
+| `pnpm db:start` / `db:stop` / `db:status` | Local Supabase stack                                            |
+| `pnpm db:reset`                           | Re-apply all migrations from scratch                            |
+| `pnpm db:diff`                            | Diff local schema against migrations                            |
+| `pnpm db:types`                           | Regenerate `lib/db/types.generated.ts`                          |
 
 ## Security posture
 
