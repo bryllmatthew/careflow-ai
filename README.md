@@ -9,14 +9,20 @@ data model rather than bolted together as separate features.
 
 ## Status
 
-**Phase 1 — Foundation. In progress.**
+**Phase 1 — Foundation. Complete.**
 
-Tasks 1.1-1.6 are complete: repository scaffold, the Supabase client layer, the
-tenancy/roles/permissions schema, and the RLS authorization core, all verified
-by a 24-case pgTAP suite (`pnpm test:rls`). No auth flows, application shell,
-or business features yet.
+Multi-tenant schema, RLS authorization core, auth flows, onboarding, the
+application shell, clinics management, and users/roles settings — all verified
+end-to-end against a running local stack, with a 43-case pgTAP suite
+(`pnpm test:rls`) as the standing merge gate. A real clinic can sign up, create
+an organization with clinics, invite staff with scoped roles, and manage them —
+with tenant isolation enforced at the database level, not only in application
+code.
 
-See `docs/MVP_ROADMAP.md` for the phase plan and `CLAUDE.md` for engineering rules.
+Phases 2–9 (patients, scheduling, reminders, sales, payments, inventory, full
+dashboards, AI assistant) are next — see `docs/MVP_ROADMAP.md` for the phase
+plan and `CLAUDE.md` for engineering rules and the deliberate deviations from
+the specs.
 
 ## Stack
 
