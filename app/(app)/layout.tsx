@@ -25,7 +25,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
 
   const currentOrg = auth.memberships[0];
   if (!currentOrg) {
-    redirect("/create-organization");
+    redirect(auth.hasAnyMembership ? "/no-access" : "/create-organization");
   }
 
   const permissions = await getPermissionSet(currentOrg.organizationId);

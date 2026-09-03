@@ -11,13 +11,21 @@ export type AuthContext = {
   email: string | null;
   /** Organizations this user is an ACTIVE member of. Empty for a brand-new account. */
   memberships: ActiveMembership[];
+  /**
+   * True if the user has any membership row at all (invited, active,
+   * suspended or removed), even when `memberships` is empty. Distinguishes
+   * "never joined anything -- send them to onboarding" from "was suspended
+   * or removed -- do not offer to create a new organization", which look
+   * identical if you only look at active memberships.
+   */
+  hasAnyMembership: boolean;
 };
 
 /**
- * Resolves the current session and active organization memberships in one
- * round trip. Returns null when there is no session -- callers decide
- * whether that means redirect to /login (most pages) or render as
- * unauthenticated (rare).
+ * Resolves the current session and organization memberships in one round
+ * trip. Returns null when there is no session -- callers decide whether
+ * that means redirect to /login (most pages) or render as unauthenticated
+ * (rare).
  *
  * This does NOT check any specific permission; it is the "who is asking"
  * half of authorization. See requirePermission() for the "are they allowed"
@@ -33,17 +41,22 @@ export async function getAuthContext(): Promise<AuthContext | null> {
     return null;
   }
 
+  // Deliberately unfiltered by status: organization_memberships_select
+  // always lets a user see their OWN row regardless of status (it is not
+  // gated by users.view for that case), so this is one query, not two.
   const { data: memberships } = await supabase
     .from("organization_memberships")
-    .select("organization_id, organizations(name)")
-    .eq("status", "active");
+    .select("organization_id, status, organizations(name)");
+
+  const active = (memberships ?? []).filter((m) => m.status === "active");
 
   return {
     userId: user.id,
     email: user.email ?? null,
-    memberships: (memberships ?? []).map((m) => ({
+    memberships: active.map((m) => ({
       organizationId: m.organization_id,
       organizationName: m.organizations?.name ?? "Untitled organization",
     })),
+    hasAnyMembership: (memberships ?? []).length > 0,
   };
 }
