@@ -34,6 +34,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          id: string
+          metadata: Json
+          organization_id: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          metadata?: Json
+          organization_id: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          metadata?: Json
+          organization_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clinics: {
         Row: {
           address: string | null
@@ -354,7 +402,28 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_organization: {
+        Args: {
+          p_business_type?: string
+          p_clinic_name?: string
+          p_org_name: string
+        }
+        Returns: string
+      }
+      grant_user_role: {
+        Args: {
+          p_clinic_id?: string
+          p_organization_id: string
+          p_role_id: string
+          p_target_user: string
+        }
+        Returns: string
+      }
+      revoke_user_role: { Args: { p_user_role_id: string }; Returns: undefined }
+      set_membership_status: {
+        Args: { p_membership_id: string; p_status: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

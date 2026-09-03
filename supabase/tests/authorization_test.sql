@@ -21,7 +21,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(24);
+select plan(31);
 
 -- ----------------------------------------------------------------------------
 -- Structural assertions (Task 1.6 / CLAUDE.md "Non-negotiable security rules")
@@ -366,6 +366,86 @@ select throws_ok(
   '42501',
   null,
   'system role permissions are immutable to every client role, including via a direct DELETE'
+);
+
+-- ----------------------------------------------------------------------------
+-- Write RPCs (migration 0004): the only paths that create organizations or
+-- write to user_roles / organization_memberships.status. Needs a fresh owner,
+-- which none of the fixture above holds -- create_organization() itself
+-- establishes one, so it doubles as the RPC's own test.
+-- ----------------------------------------------------------------------------
+
+set local role authenticated;
+select pg_temp.act_as('receptionist_a');
+
+select throws_ok(
+  format($sql$select public.grant_user_role(%L::uuid, %L::uuid, %L::uuid, null)$sql$,
+         current_setting('fx.receptionist_a'), current_setting('fx.role_owner'), current_setting('fx.org_a')),
+  '42501',
+  null,
+  'grant_user_role rejects an actor who holds no roles.manage grant at all'
+);
+
+-- Deliberately `set local role authenticated` rather than `reset role` here:
+-- these RPCs must be proven to work for the actual restricted `authenticated`
+-- role, not for the table-owning role this file's fixture setup runs as.
+-- Superuser/owner roles bypass grant checks entirely, so testing as postgres
+-- would not catch a missing `grant execute ... to authenticated`.
+set local role authenticated;
+select pg_temp.act_as('admin_a');
+
+select isnt(
+  public.create_organization('pgTAP RPC Org', 'dental', 'RPC Clinic'),
+  null,
+  'create_organization returns a new organization id'
+);
+
+select public.create_organization('pgTAP RPC Org 2', 'dental', 'RPC Clinic 2') as new_org \gset
+select set_config('fx.rpc_org', :'new_org', false);
+
+select is(
+  (select count(*)::int from public.clinics where organization_id = current_setting('fx.rpc_org')::uuid),
+  1,
+  'create_organization also creates exactly one clinic for the new organization'
+);
+
+select is(
+  (select r.key
+     from public.user_roles ur
+     join public.roles r on r.id = ur.role_id
+    where ur.organization_id = current_setting('fx.rpc_org')::uuid
+      and ur.user_id = current_setting('fx.admin_a')::uuid),
+  'owner',
+  'the creator of an organization is granted its owner role, organization-wide'
+);
+
+select throws_ok(
+  format('select public.revoke_user_role(%L::uuid)',
+    (select ur.id from public.user_roles ur
+      join public.roles r on r.id = ur.role_id
+     where ur.organization_id = current_setting('fx.rpc_org')::uuid
+       and ur.user_id = current_setting('fx.admin_a')::uuid and r.key = 'owner')::text),
+  '23514',
+  null,
+  'revoke_user_role refuses to remove an organization''s only active owner, including by that owner themselves'
+);
+
+select throws_ok(
+  format('select public.set_membership_status(%L::uuid, %L)',
+    (select id from public.organization_memberships
+      where organization_id = current_setting('fx.rpc_org')::uuid
+        and user_id = current_setting('fx.admin_a')::uuid)::text,
+    'suspended'),
+  '42501',
+  null,
+  'set_membership_status refuses to let an actor change their own membership status'
+);
+
+select is(
+  (select count(*)::int from public.audit_logs
+    where organization_id = current_setting('fx.rpc_org')::uuid and action = 'organization.created'),
+  1,
+  'create_organization writes an audit_logs entry'
 );
 
 -- ----------------------------------------------------------------------------
