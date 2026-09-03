@@ -21,7 +21,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(35);
+select plan(36);
 
 -- ----------------------------------------------------------------------------
 -- Structural assertions (Task 1.6 / CLAUDE.md "Non-negotiable security rules")
@@ -407,6 +407,23 @@ select is(
   (select count(*)::int from public.clinics where organization_id = current_setting('fx.rpc_org')::uuid),
   1,
   'create_organization also creates exactly one clinic for the new organization'
+);
+
+-- Regression test for a real bug found in Task 1.14: app.permitted_clinics()
+-- joins to public.clinics, so using it in the clinics table's OWN select
+-- policy is circular -- a single statement's MVCC snapshot means
+-- INSERT ... RETURNING can never see the row it is simultaneously creating.
+-- Migration 0007 fixed this with clinics-independent helpers
+-- (permitted_orgs_orgwide + granted_clinic_ids). An UPDATE ... RETURNING on
+-- an ALREADY-EXISTING clinic was never affected (that row predates the
+-- statement), only INSERT was -- this test exercises exactly that path.
+insert into public.clinics (organization_id, name, timezone)
+values (current_setting('fx.rpc_org')::uuid, 'Regression Test Clinic', 'UTC')
+returning id as regression_clinic_id \gset
+
+select ok(
+  :'regression_clinic_id'::uuid is not null,
+  'INSERT ... RETURNING on clinics succeeds for an org-wide owner (migration 0007 regression)'
 );
 
 select is(
