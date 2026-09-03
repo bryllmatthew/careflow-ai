@@ -1,0 +1,11 @@
+# Normalize line endings: LF in the repository, native in the working tree.
+* text=auto eol=lf
+
+# SQL migrations are applied by the Supabase CLI and by psql in CI; keep them LF.
+*.sql text eol=lf
+
+# Lockfiles are generated; do not diff them by default.
+pnpm-lock.yaml -diff linguist-generated
+
+# Generated database types.
+lib/db/types.generated.ts -diff linguist-generated

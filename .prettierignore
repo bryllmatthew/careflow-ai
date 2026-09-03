@@ -1,0 +1,8 @@
+.next/
+node_modules/
+out/
+build/
+coverage/
+pnpm-lock.yaml
+lib/db/types.generated.ts
+docs/
