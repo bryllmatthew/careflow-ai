@@ -98,3 +98,18 @@ export async function canAccessClinic(clinicId: string): Promise<boolean> {
 // docs/AUTHORIZATION.md section 17) are deferred: the tables they would
 // check don't exist until Phase 2 and Phase 5. Add them there, following the
 // same row-existence pattern as canAccessClinic above.
+
+/**
+ * The caller's full permission set within one organization, in a single
+ * round trip. For filtering UI (navigation, buttons) against many possible
+ * permissions at once -- never for an individual authorization decision,
+ * where requirePermission()/can() remain the source of truth.
+ */
+export async function getPermissionSet(organizationId: string): Promise<Set<Permission>> {
+  const supabase = await getSupabaseServerClient();
+  const { data, error } = await supabase.rpc("my_permissions", {
+    p_organization_id: organizationId,
+  });
+  if (error || !data) return new Set();
+  return new Set(data as Permission[]);
+}

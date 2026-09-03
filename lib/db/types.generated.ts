@@ -427,6 +427,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      my_permissions: { Args: { p_organization_id: string }; Returns: string[] }
       revoke_user_role: { Args: { p_user_role_id: string }; Returns: undefined }
       set_membership_status: {
         Args: { p_membership_id: string; p_status: string }

@@ -21,7 +21,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(33);
+select plan(35);
 
 -- ----------------------------------------------------------------------------
 -- Structural assertions (Task 1.6 / CLAUDE.md "Non-negotiable security rules")
@@ -466,6 +466,21 @@ select ok(
 select ok(
   not public.has_permission('roles.manage', current_setting('fx.org_a')::uuid, null),
   'has_permission is false for a permission the caller''s role does not grant (admin lacks roles.manage)'
+);
+
+-- ----------------------------------------------------------------------------
+-- public.my_permissions (migration 0006): the nav-filtering RPC. One round
+-- trip returning the caller's whole permission set for an organization.
+-- ----------------------------------------------------------------------------
+
+select ok(
+  'appointments.view' = any (public.my_permissions(current_setting('fx.org_a')::uuid)),
+  'my_permissions includes a permission the caller actually holds'
+);
+
+select ok(
+  not ('roles.manage' = any (public.my_permissions(current_setting('fx.org_a')::uuid))),
+  'my_permissions excludes a permission the caller does not hold'
 );
 
 -- ----------------------------------------------------------------------------

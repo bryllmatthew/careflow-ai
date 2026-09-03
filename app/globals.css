@@ -23,6 +23,12 @@
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
+  --color-info-foreground: var(--info-foreground);
+  --color-info: var(--info);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning: var(--warning);
+  --color-success-foreground: var(--success-foreground);
+  --color-success: var(--success);
   --color-destructive: var(--destructive);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
@@ -47,6 +53,25 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/*
+ * One brand accent (indigo, hue ~264) applied consistently to --primary,
+ * --ring and --sidebar-primary in both modes -- everything else stays
+ * neutral grayscale. Matches docs/UI_UX_SPEC.md's stated direction ("clean,
+ * premium... avoid too many colors, excessive gradients") more literally
+ * than shadcn's own default: the stock Nova preset only applied this hue to
+ * --sidebar-primary in dark mode, leaving light mode and every other primary
+ * surface pure grayscale.
+ *
+ * Contrast: light-mode --primary sits at L≈0.47 (clearly darker than
+ * mid-gray) so near-white text on it clears WCAG AA (4.5:1) with margin;
+ * dark-mode --primary sits at L≈0.72 (clearly lighter than mid-gray) so
+ * near-black text on it does the same. Same rule applied to the new
+ * semantic tokens below.
+ *
+ * Chart colors are left untouched (Nova's grayscale gradient) -- deliberately
+ * deferred to Task 1.16, which loads the dataviz skill before choosing a
+ * categorical palette rather than improvising one here.
+ */
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -54,7 +79,7 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  --primary: oklch(0.47 0.19 264);
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
@@ -63,9 +88,15 @@
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
+  --success: oklch(0.52 0.14 152);
+  --success-foreground: oklch(0.985 0 0);
+  --warning: oklch(0.72 0.16 70);
+  --warning-foreground: oklch(0.18 0 0);
+  --info: oklch(0.5 0.15 230);
+  --info-foreground: oklch(0.985 0 0);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --ring: oklch(0.6 0.14 264);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -74,12 +105,12 @@
   --radius: 0.625rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary: oklch(0.47 0.19 264);
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.97 0 0);
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar-ring: oklch(0.6 0.14 264);
 }
 
 .dark {
@@ -89,8 +120,8 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
+  --primary: oklch(0.72 0.17 264);
+  --primary-foreground: oklch(0.15 0 0);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
@@ -98,9 +129,15 @@
   --accent: oklch(0.269 0 0);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
+  --success: oklch(0.72 0.15 152);
+  --success-foreground: oklch(0.15 0 0);
+  --warning: oklch(0.78 0.15 70);
+  --warning-foreground: oklch(0.15 0 0);
+  --info: oklch(0.72 0.14 230);
+  --info-foreground: oklch(0.15 0 0);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --ring: oklch(0.6 0.16 264);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -108,12 +145,12 @@
   --chart-5: oklch(0.269 0 0);
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.72 0.17 264);
+  --sidebar-primary-foreground: oklch(0.15 0 0);
   --sidebar-accent: oklch(0.269 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-ring: oklch(0.6 0.16 264);
 }
 
 @layer base {
