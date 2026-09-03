@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { getAuthContext } from "@/lib/auth/session";
 import { Button } from "@/components/ui/button";
 import { logoutAction } from "./(auth)/actions";
 
@@ -12,21 +12,13 @@ import { logoutAction } from "./(auth)/actions";
  * delivers and will not change shape later.
  */
 export default async function Home() {
-  const supabase = await getSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const auth = await getAuthContext();
 
-  if (!user) {
+  if (!auth) {
     redirect("/login");
   }
 
-  const { data: memberships } = await supabase
-    .from("organization_memberships")
-    .select("organization_id, status, organizations(name)")
-    .eq("status", "active");
-
-  if (!memberships || memberships.length === 0) {
+  if (auth.memberships.length === 0) {
     redirect("/create-organization");
   }
 
@@ -34,10 +26,10 @@ export default async function Home() {
     <main className="flex min-h-dvh items-center justify-center p-8">
       <div className="text-center">
         <h1 className="text-2xl font-semibold tracking-tight">CareFlow AI</h1>
-        <p className="mt-2 text-sm text-gray-500">Signed in as {user.email}.</p>
+        <p className="mt-2 text-sm text-gray-500">Signed in as {auth.email}.</p>
         <ul className="mt-4 text-sm text-gray-700">
-          {memberships.map((m) => (
-            <li key={m.organization_id}>{m.organizations?.name}</li>
+          {auth.memberships.map((m) => (
+            <li key={m.organizationId}>{m.organizationName}</li>
           ))}
         </ul>
         <p className="mt-4 text-sm text-gray-500">

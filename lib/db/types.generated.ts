@@ -419,6 +419,14 @@ export type Database = {
         }
         Returns: string
       }
+      has_permission: {
+        Args: {
+          p_clinic_id?: string
+          p_organization_id: string
+          p_permission: string
+        }
+        Returns: boolean
+      }
       revoke_user_role: { Args: { p_user_role_id: string }; Returns: undefined }
       set_membership_status: {
         Args: { p_membership_id: string; p_status: string }

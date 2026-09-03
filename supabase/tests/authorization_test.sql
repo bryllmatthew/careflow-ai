@@ -21,7 +21,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(31);
+select plan(33);
 
 -- ----------------------------------------------------------------------------
 -- Structural assertions (Task 1.6 / CLAUDE.md "Non-negotiable security rules")
@@ -446,6 +446,26 @@ select is(
     where organization_id = current_setting('fx.rpc_org')::uuid and action = 'organization.created'),
   1,
   'create_organization writes an audit_logs entry'
+);
+
+-- ----------------------------------------------------------------------------
+-- public.has_permission (migration 0005): the one RPC the TypeScript
+-- authorization layer (lib/auth/require-permission.ts, Task 1.9) calls. A
+-- thin SECURITY INVOKER wrapper over the already-tested app.* helpers, so
+-- this only needs to prove the wrapper itself is wired correctly, not
+-- re-prove the underlying logic.
+-- ----------------------------------------------------------------------------
+
+select pg_temp.act_as('admin_a');
+
+select ok(
+  public.has_permission('appointments.view', current_setting('fx.org_a')::uuid, null),
+  'has_permission is true for a permission the caller''s role actually grants'
+);
+
+select ok(
+  not public.has_permission('roles.manage', current_setting('fx.org_a')::uuid, null),
+  'has_permission is false for a permission the caller''s role does not grant (admin lacks roles.manage)'
 );
 
 -- ----------------------------------------------------------------------------
