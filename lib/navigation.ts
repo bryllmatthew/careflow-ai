@@ -26,8 +26,14 @@ export type NavItem = {
   title: string;
   href: string;
   icon: LucideIcon;
-  /** Omit for items every active member should see regardless of role (Dashboard). */
-  permission?: Permission;
+  /**
+   * Omit for items every active member should see regardless of role
+   * (Dashboard). An array means "holding ANY one of these is enough" -- e.g.
+   * Patients is visible to both a receptionist (patients.view) and a
+   * practitioner who holds only patients.view.assigned; a single-permission
+   * field would hide it from the practitioner entirely.
+   */
+  permission?: Permission | Permission[];
 };
 
 export type NavSection = {
@@ -59,7 +65,12 @@ export const NAVIGATION: NavSection[] = [
   {
     title: "Patients",
     items: [
-      { title: "Patients", href: "/patients", icon: Users, permission: "patients.view" },
+      {
+        title: "Patients",
+        href: "/patients",
+        icon: Users,
+        permission: ["patients.view", "patients.view.assigned"],
+      },
       {
         title: "Follow-ups",
         href: "/followups",
@@ -148,6 +159,7 @@ export const NAVIGATION: NavSection[] = [
         title: "Notifications",
         href: "/settings/notifications",
         icon: Sparkles,
+        permission: "automations.view",
       },
       {
         title: "Integrations",
