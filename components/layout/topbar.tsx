@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Menu, ChevronDown, Bell, LogOut } from "lucide-react";
+import { Menu, ChevronDown, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -15,6 +15,7 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { logoutAction } from "@/app/(auth)/actions";
 import { SidebarNav } from "./sidebar-nav";
+import { NotificationBell } from "./notification-bell";
 
 function initials(nameOrEmail: string): string {
   const trimmed = nameOrEmail.trim();
@@ -60,9 +61,7 @@ export function Topbar({
 
       <div className="flex-1" />
 
-      <Button variant="ghost" size="icon" aria-label="Notifications" disabled>
-        <Bell className="size-4.5" />
-      </Button>
+      <NotificationBell />
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

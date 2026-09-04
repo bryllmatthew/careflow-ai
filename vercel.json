@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/process-reminders",
+      "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/cron/check-overdue-invoices",
+      "schedule": "0 * * * *"
+    }
+  ]
+}
