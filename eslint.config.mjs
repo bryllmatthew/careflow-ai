@@ -43,6 +43,24 @@ const eslintConfig = defineConfig([
       // Kept to this single file, not a directory, so the admin client's
       // use stays enumerable rather than becoming a habit.
       "app/(app)/settings/users/actions.ts",
+      // Second exception: the reminder cron processor (Phase 4) has no end
+      // user -- it's invoked by a scheduler, not a person -- so there is no
+      // JWT to carry and RLS has nothing to resolve auth.uid() against. It
+      // must legitimately cross every organization's reminders to find
+      // what's due. Authenticated by a shared secret instead of a session --
+      // see the file itself.
+      "app/api/cron/process-reminders/route.ts",
+      // Third exception, same reasoning: overdue-invoice detection (Phase 5)
+      // is also a scheduler-invoked job with no end user.
+      "app/api/cron/check-overdue-invoices/route.ts",
+      // Fourth exception: the payments webhook (Phase 6) is invoked by the
+      // payment provider itself, not a signed-in user -- there is no JWT to
+      // carry. Authenticated by verifying the provider's signature instead
+      // of a session -- see the file itself.
+      // Brackets are escaped: unescaped, the glob engine treats
+      // "[provider]" as a one-character class ("p","r","o","v",...), not a
+      // literal match for the dynamic-segment folder name.
+      "app/api/webhooks/payments/\\[provider\\]/route.ts",
     ],
     rules: {
       "no-restricted-imports": "off",

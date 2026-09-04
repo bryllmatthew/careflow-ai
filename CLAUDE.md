@@ -113,15 +113,37 @@ Recorded so the code and docs stop contradicting each other:
   SKU is duplicated per clinic.
 - **`patients.clinic_id` is `NOT NULL`** (spec had nullable `primary_clinic_id`), with a
   `patient_clinics` join for records shared across branches.
-- **Services moved to Phase 2** (spec had Phase 5). `appointments.service_id` supplies duration, price
-  and practitioner requirements, so Phase 3 scheduling cannot ship without it. `docs/CLAUDE.md` §3
-  already ranks Services before Scheduling.
-- **Manual payment recording moved to Phase 5** (spec had Phase 6). A clinic can bill on day one
-  without a gateway; Phase 6 becomes purely the online-payment integration.
-- **`permissions`, `role_permissions`, `rooms`, `staff_availability`, `staff_clinics`,
-  `service_products`, `purchase_order_items`, `inventory_batches`, `reminder_templates`,
-  `automation_rules`, `communications`, `tax_rates`, `domain_events`, `document_counters` and
-  `ai_tool_calls` are added** — each is required by a spec elsewhere but defined nowhere.
+- **Services shipped immediately before Scheduling** (spec had Phase 5), as a Phase 3 prerequisite
+  rather than inside Phase 2. `appointments.service_id` supplies duration, price and practitioner
+  requirements, so scheduling cannot ship without it. `docs/CLAUDE.md` §3 already ranks Services
+  before Scheduling.
+- **Manual payment recording stays in Phase 6**, matching the spec's original phase numbering after
+  all — an earlier version of this note said Phase 5 would take it, but Phase 5's own brief was
+  explicit that payment records are Phase 6's job. `invoices.amount_paid`/`balance` exist as real
+  columns from Phase 5 (so Phase 6 extends this table rather than restructuring it), but nothing
+  writes to `amount_paid` yet; no `payments` table exists.
+- **No org/clinic-level tax configuration table.** `invoices.tax_rate` is a plain per-invoice
+  percentage, defaulting to 0 — `docs/CLAUDE.md`'s "Known open questions" already flags the
+  compliance/tax regime (PH VAT vs. HIPAA-adjacent assumptions) as unresolved; a config table would
+  encode a policy nobody has specified yet.
+- **No product line items on invoices.** No products/inventory table exists until Phase 7 —
+  `invoice_items.service_id` is the only structured source column; a `product_id` nobody could
+  populate would be dead weight, not a real feature.
+- **No `rooms` or `staff_availability` table yet**, despite both being named in the original Phase 1
+  plan's table inventory. Double-booking prevention (the hard safety requirement) is enforced by
+  `appointments`' `EXCLUDE` constraint on `(staff_id, time_range)`, which does not depend on either —
+  room assignment and declared working hours are real, separable features with no UI to populate them
+  yet, deferred rather than faked. See `supabase/migrations/..._appointments_core.sql`'s header comment.
+- **Appointment booking treats the browser's local timezone as the clinic's timezone.** The booking
+  form's date/time `<input>`s are combined into a UTC instant via the browser's own `Date` resolution,
+  not `clinics.timezone` — correct as long as the person booking is physically at (or near) the clinic,
+  which covers the MVP's real usage pattern. A true per-clinic timezone conversion needs a
+  date-fns-tz–class dependency, deferred until it's a decision worth its own care rather than a detail
+  inside the booking form.
+- **`permissions`, `role_permissions`, `staff_clinics`, `service_products`, `purchase_order_items`,
+  `inventory_batches`, `reminder_templates`, `automation_rules`, `communications`, `tax_rates`,
+  `domain_events`, `document_counters` and `ai_tool_calls` are added** — each is required by a spec
+  elsewhere but defined nowhere.
 - **Next.js 16** (plan said 15; 16 was stable by build time).
 
 ## Known open questions
