@@ -94,10 +94,15 @@ export async function canAccessClinic(clinicId: string): Promise<boolean> {
   return data !== null;
 }
 
-// canAccessPatient / canAccessAppointment / canAccessInvoice (per
-// docs/AUTHORIZATION.md section 17) are deferred: the tables they would
-// check don't exist until Phase 2 and Phase 5. Add them there, following the
-// same row-existence pattern as canAccessClinic above.
+export async function canAccessPatient(patientId: string): Promise<boolean> {
+  const supabase = await getSupabaseServerClient();
+  const { data } = await supabase.from("patients").select("id").eq("id", patientId).maybeSingle();
+  return data !== null;
+}
+
+// canAccessAppointment / canAccessInvoice (per docs/AUTHORIZATION.md section
+// 17) are deferred: the tables they would check don't exist until Phase 3
+// and Phase 5. Add them there, following the same row-existence pattern.
 
 /**
  * The caller's full permission set within one organization, in a single

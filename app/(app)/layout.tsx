@@ -35,9 +35,11 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   // function reference across the server/client boundary. SidebarNav/Topbar
   // import the icon-bearing NAVIGATION config directly instead; this is just
   // "which hrefs may this user see".
-  const visibleHrefs = ALL_NAV_ITEMS.filter(
-    (item) => !item.permission || permissions.has(item.permission),
-  ).map((item) => item.href);
+  const visibleHrefs = ALL_NAV_ITEMS.filter((item) => {
+    if (!item.permission) return true;
+    const required = Array.isArray(item.permission) ? item.permission : [item.permission];
+    return required.some((p) => permissions.has(p));
+  }).map((item) => item.href);
 
   return (
     <AppShell
