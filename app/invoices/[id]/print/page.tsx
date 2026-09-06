@@ -22,8 +22,16 @@ export default async function InvoicePrintPage({ params }: { params: Promise<{ i
 
   const supabase = await getSupabaseServerClient();
   const [{ data: clinic }, { data: org }] = await Promise.all([
-    supabase.from("clinics").select("name, address, phone, email").eq("id", invoice.clinicId).maybeSingle(),
-    supabase.from("organizations").select("name").eq("id", auth.memberships[0]!.organizationId).maybeSingle(),
+    supabase
+      .from("clinics")
+      .select("name, address, phone, email")
+      .eq("id", invoice.clinicId)
+      .maybeSingle(),
+    supabase
+      .from("organizations")
+      .select("name")
+      .eq("id", auth.memberships[0]!.organizationId)
+      .maybeSingle(),
   ]);
 
   return (
@@ -46,7 +54,9 @@ export default async function InvoicePrintPage({ params }: { params: Promise<{ i
           <p className="text-muted-foreground text-sm">{invoice.invoiceNumber ?? "Draft"}</p>
           <p className="text-muted-foreground text-sm">
             {invoice.issueDate
-              ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(invoice.issueDate))
+              ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(
+                  new Date(invoice.issueDate),
+                )
               : "Not yet issued"}
           </p>
         </div>
@@ -61,11 +71,15 @@ export default async function InvoicePrintPage({ params }: { params: Promise<{ i
           <p className="text-muted-foreground mb-1 text-xs font-medium uppercase">Due date</p>
           <p>
             {invoice.dueDate
-              ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(invoice.dueDate))
+              ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(
+                  new Date(invoice.dueDate),
+                )
               : "—"}
           </p>
           <p className="text-muted-foreground mt-1 text-xs font-medium uppercase">Status</p>
-          <p className="capitalize">{invoice.isOverdue ? "Overdue" : invoice.status.replaceAll("_", " ")}</p>
+          <p className="capitalize">
+            {invoice.isOverdue ? "Overdue" : invoice.status.replaceAll("_", " ")}
+          </p>
         </div>
       </div>
 

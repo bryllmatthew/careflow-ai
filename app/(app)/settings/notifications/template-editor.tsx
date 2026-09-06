@@ -93,13 +93,22 @@ export function TemplateEditor({ template }: { template: ReminderTemplateRow }) 
             {template.channel === "email" && (
               <div className="flex flex-col gap-2">
                 <Label htmlFor="tpl-subject">Subject</Label>
-                <Input id="tpl-subject" value={subject} onChange={(e) => setSubject(e.target.value)} />
+                <Input
+                  id="tpl-subject"
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                />
               </div>
             )}
 
             <div className="flex flex-col gap-2">
               <Label htmlFor="tpl-body">Message</Label>
-              <Textarea id="tpl-body" rows={5} value={body} onChange={(e) => setBody(e.target.value)} />
+              <Textarea
+                id="tpl-body"
+                rows={5}
+                value={body}
+                onChange={(e) => setBody(e.target.value)}
+              />
               <p className="text-muted-foreground text-xs">
                 Supported variables: {TEMPLATE_VARIABLES.map((v) => `{{${v}}}`).join(", ")}
               </p>
@@ -110,7 +119,9 @@ export function TemplateEditor({ template }: { template: ReminderTemplateRow }) 
             <div>
               <p className="text-muted-foreground mb-1 text-xs font-medium uppercase">Preview</p>
               <div className="rounded-lg border p-3 text-sm">
-                {subject && <p className="mb-1 font-medium">{renderTemplate(subject, PREVIEW_CONTEXT)}</p>}
+                {subject && (
+                  <p className="mb-1 font-medium">{renderTemplate(subject, PREVIEW_CONTEXT)}</p>
+                )}
                 <p className="whitespace-pre-wrap">{renderTemplate(body, PREVIEW_CONTEXT)}</p>
               </div>
             </div>

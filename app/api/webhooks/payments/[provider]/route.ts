@@ -17,15 +17,22 @@ import { notifyUser, resolvePaymentFollowUps } from "@/lib/automation/dispatch";
  * signature, not a session. That's the service-role exception recorded in
  * eslint.config.mjs's allowlist, matching the two cron routes.
  */
-export async function POST(request: Request, { params }: { params: Promise<{ provider: string }> }) {
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ provider: string }> },
+) {
   const { provider: providerParam } = await params;
 
   const rawBody = await request.text();
-  const signatureHeader = request.headers.get("x-webhook-signature") ?? request.headers.get("stripe-signature");
+  const signatureHeader =
+    request.headers.get("x-webhook-signature") ?? request.headers.get("stripe-signature");
   const secret = paymentWebhookSecret();
 
   if (!secret) {
-    return NextResponse.json({ error: "Payment webhooks are not configured on this server." }, { status: 503 });
+    return NextResponse.json(
+      { error: "Payment webhooks are not configured on this server." },
+      { status: 503 },
+    );
   }
 
   const provider = getPaymentProvider();
@@ -71,7 +78,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ pro
 
   if (!event.providerPaymentIntentId && !event.providerTransactionId) {
     await markProcessed(supabase, provider.key, event.eventId);
-    return NextResponse.json({ status: "acknowledged", note: "No payment identifier on this event." });
+    return NextResponse.json({
+      status: "acknowledged",
+      note: "No payment identifier on this event.",
+    });
   }
 
   let paymentQuery = supabase
@@ -97,7 +107,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ pro
   // delivery from silently altering history (CLAUDE.md section 45).
   if (payment.status !== "pending" && payment.status !== "processing") {
     await markProcessed(supabase, provider.key, event.eventId);
-    return NextResponse.json({ status: "acknowledged", note: "Payment already in a terminal state." });
+    return NextResponse.json({
+      status: "acknowledged",
+      note: "Payment already in a terminal state.",
+    });
   }
 
   if (event.status === "succeeded") {
@@ -123,7 +136,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ pro
       });
     }
 
-    const { data: invoice } = await supabase.from("invoices").select("status").eq("id", payment.invoice_id).maybeSingle();
+    const { data: invoice } = await supabase
+      .from("invoices")
+      .select("status")
+      .eq("id", payment.invoice_id)
+      .maybeSingle();
     if (invoice?.status === "paid") {
       await resolvePaymentFollowUps(supabase, payment.invoice_id);
     }

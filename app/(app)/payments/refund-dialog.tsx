@@ -71,8 +71,12 @@ export function RefundDialog({
         <DialogHeader>
           <DialogTitle>Refund this payment</DialogTitle>
           <DialogDescription>
-            Recorded as a separate refund event -- the original payment record is never altered. Refundable:{" "}
-            {new Intl.NumberFormat(undefined, { style: "currency", currency }).format(Number(refundableAmount))}.
+            Recorded as a separate refund event -- the original payment record is never altered.
+            Refundable:{" "}
+            {new Intl.NumberFormat(undefined, { style: "currency", currency }).format(
+              Number(refundableAmount),
+            )}
+            .
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-3 py-2">
@@ -83,15 +87,29 @@ export function RefundDialog({
           )}
           <div className="flex flex-col gap-1">
             <Label htmlFor="refund-amount">Amount</Label>
-            <Input id="refund-amount" value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" />
+            <Input
+              id="refund-amount"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              inputMode="decimal"
+            />
           </div>
           <div className="flex flex-col gap-1">
             <Label htmlFor="refund-reason">Reason</Label>
-            <Textarea id="refund-reason" rows={3} value={reason} onChange={(e) => setReason(e.target.value)} />
+            <Textarea
+              id="refund-reason"
+              rows={3}
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+            />
           </div>
         </div>
         <DialogFooter>
-          <Button variant="destructive" disabled={pending || !amount.trim() || !reason.trim()} onClick={submit}>
+          <Button
+            variant="destructive"
+            disabled={pending || !amount.trim() || !reason.trim()}
+            onClick={submit}
+          >
             {pending ? "Refunding…" : "Refund payment"}
           </Button>
         </DialogFooter>

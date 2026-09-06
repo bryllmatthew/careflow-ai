@@ -55,7 +55,9 @@ export function NotificationBell() {
   }
 
   function markRead(id: string) {
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, readAt: new Date().toISOString() } : n)));
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, readAt: new Date().toISOString() } : n)),
+    );
     setUnreadCount((c) => Math.max(0, c - 1));
     startTransition(() => {
       markNotificationReadAction(id);
@@ -63,7 +65,9 @@ export function NotificationBell() {
   }
 
   function markAllRead() {
-    setNotifications((prev) => prev.map((n) => ({ ...n, readAt: n.readAt ?? new Date().toISOString() })));
+    setNotifications((prev) =>
+      prev.map((n) => ({ ...n, readAt: n.readAt ?? new Date().toISOString() })),
+    );
     setUnreadCount(0);
     startTransition(() => {
       markAllNotificationsReadAction();
@@ -118,9 +122,10 @@ export function NotificationBell() {
                 </div>
                 <p className="text-muted-foreground text-xs">{n.message}</p>
                 <p className="text-muted-foreground text-xs">
-                  {new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(
-                    new Date(n.createdAt),
-                  )}
+                  {new Intl.DateTimeFormat(undefined, {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  }).format(new Date(n.createdAt))}
                 </p>
               </DropdownMenuItem>
             ))}

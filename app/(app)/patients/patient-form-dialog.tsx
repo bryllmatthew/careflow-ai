@@ -110,7 +110,7 @@ export function PatientFormDialog({
           <>
             <DialogHeader>
               <div className="flex items-center gap-2">
-                <AlertTriangle className="size-5 text-warning" aria-hidden />
+                <AlertTriangle className="text-warning size-5" aria-hidden />
                 <DialogTitle>Possible duplicate patient</DialogTitle>
               </div>
               <DialogDescription>

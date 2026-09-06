@@ -77,7 +77,9 @@ export function InvoiceActions({
         />
       )}
 
-      {["issued", "overdue", "partially_paid"].includes(status) && canVoid && <VoidDialog invoiceId={invoiceId} />}
+      {["issued", "overdue", "partially_paid"].includes(status) && canVoid && (
+        <VoidDialog invoiceId={invoiceId} />
+      )}
 
       <Button asChild variant="outline" size="sm">
         <Link href={`/invoices/${invoiceId}/print`} target="_blank">
@@ -130,7 +132,8 @@ function VoidDialog({ invoiceId }: { invoiceId: string }) {
         <DialogHeader>
           <DialogTitle>Void this invoice?</DialogTitle>
           <DialogDescription>
-            The invoice stays in history -- it&apos;s marked void, not deleted. A reason is required.
+            The invoice stays in history -- it&apos;s marked void, not deleted. A reason is
+            required.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-2 py-2">
@@ -140,7 +143,12 @@ function VoidDialog({ invoiceId }: { invoiceId: string }) {
             </Alert>
           )}
           <Label htmlFor="void-reason">Reason</Label>
-          <Textarea id="void-reason" rows={3} value={reason} onChange={(e) => setReason(e.target.value)} />
+          <Textarea
+            id="void-reason"
+            rows={3}
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+          />
         </div>
         <DialogFooter>
           <Button variant="destructive" disabled={pending || !reason.trim()} onClick={submit}>

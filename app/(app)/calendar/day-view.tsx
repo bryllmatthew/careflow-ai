@@ -55,7 +55,13 @@ export function DayView({
   appointments: AppointmentRow[];
   practitioners: { id: string; name: string }[];
   clinics: { id: string; name: string }[];
-  services: { id: string; name: string; durationMinutes: number; price: string; clinicId: string }[];
+  services: {
+    id: string;
+    name: string;
+    durationMinutes: number;
+    price: string;
+    clinicId: string;
+  }[];
   canCreate: boolean;
   canUpdate: boolean;
   canCancel: boolean;
@@ -69,12 +75,12 @@ export function DayView({
 
   return (
     <div className="overflow-x-auto rounded-lg border">
-      <div
-        className="grid"
-        style={{ gridTemplateColumns, gridAutoRows: "2.5rem" }}
-      >
+      <div className="grid" style={{ gridTemplateColumns, gridAutoRows: "2.5rem" }}>
         {/* Header row */}
-        <div className="bg-muted/40 sticky top-0 z-10 border-b" style={{ gridColumn: 1, gridRow: 1 }} />
+        <div
+          className="bg-muted/40 sticky top-0 z-10 border-b"
+          style={{ gridColumn: 1, gridRow: 1 }}
+        />
         {columns.map((p, i) => (
           <div
             key={p.id}

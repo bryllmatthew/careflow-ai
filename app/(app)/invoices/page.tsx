@@ -32,7 +32,8 @@ export default async function InvoicesPage({
     q: single(params.q),
     clinicId: single(params.clinic),
     status:
-      statusParam === "overdue" || (statusParam && (invoiceStatuses as readonly string[]).includes(statusParam))
+      statusParam === "overdue" ||
+      (statusParam && (invoiceStatuses as readonly string[]).includes(statusParam))
         ? (statusParam as InvoiceStatus | "overdue")
         : undefined,
     page: Number(single(params.page)) || 1,
@@ -91,7 +92,12 @@ export default async function InvoicesPage({
       ) : (
         <Card className="gap-0 p-0">
           <InvoicesTable invoices={rows} />
-          <Pagination page={filters.page ?? 1} pageSize={INVOICES_PAGE_SIZE} total={total} buildHref={buildHref} />
+          <Pagination
+            page={filters.page ?? 1}
+            pageSize={INVOICES_PAGE_SIZE}
+            total={total}
+            buildHref={buildHref}
+          />
         </Card>
       )}
     </div>

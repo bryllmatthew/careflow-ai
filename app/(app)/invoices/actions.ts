@@ -103,7 +103,9 @@ export async function createInvoiceAction(input: CreateInvoiceInput): Promise<Cr
  * (docs/PRODUCT_SPEC.md Phase 5 section 8: "do not automatically charge the
  * patient").
  */
-export async function createInvoiceFromAppointmentAction(appointmentId: string): Promise<CreateInvoiceResult> {
+export async function createInvoiceFromAppointmentAction(
+  appointmentId: string,
+): Promise<CreateInvoiceResult> {
   const organizationId = await currentOrganizationId();
   const supabase = await getSupabaseServerClient();
 
@@ -151,7 +153,10 @@ export async function createInvoiceFromAppointmentAction(appointmentId: string):
     clinicId: appointment.clinic_id,
     patientId: appointment.patient_id,
   });
-  await safeAudit(supabase, organizationId, "invoice.created", invoice.id, { source: "appointment", appointmentId });
+  await safeAudit(supabase, organizationId, "invoice.created", invoice.id, {
+    source: "appointment",
+    appointmentId,
+  });
 
   revalidatePath("/invoices");
   return { success: true, invoiceId: invoice.id };
@@ -189,7 +194,10 @@ export async function addInvoiceItemAction(
 
   if (error) {
     return {
-      error: error.code === "42501" ? "This invoice can no longer be edited (it's not a draft)." : error.message,
+      error:
+        error.code === "42501"
+          ? "This invoice can no longer be edited (it's not a draft)."
+          : error.message,
     };
   }
 
@@ -234,10 +242,16 @@ export async function removeInvoiceItemAction(itemId: string, invoiceId: string)
   await requirePermission("invoices.update", { organizationId });
 
   const supabase = await getSupabaseServerClient();
-  const { data, error } = await supabase.from("invoice_items").delete().eq("id", itemId).select("id").maybeSingle();
+  const { data, error } = await supabase
+    .from("invoice_items")
+    .delete()
+    .eq("id", itemId)
+    .select("id")
+    .maybeSingle();
 
   if (error) throw new Error(error.message);
-  if (!data) throw new ForbiddenError("This line can no longer be removed (the invoice is not a draft).");
+  if (!data)
+    throw new ForbiddenError("This line can no longer be removed (the invoice is not a draft).");
 
   revalidatePath(`/invoices/${invoiceId}`);
 }
@@ -276,7 +290,10 @@ export async function updateInvoiceDetailsAction(
   return {};
 }
 
-export async function applyDiscountAction(invoiceId: string, input: DiscountInput): Promise<ActionResult> {
+export async function applyDiscountAction(
+  invoiceId: string,
+  input: DiscountInput,
+): Promise<ActionResult> {
   const parsed = discountSchema.safeParse(input);
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid discount." };
@@ -352,9 +369,14 @@ export async function cancelDraftInvoiceAction(invoiceId: string) {
   await requirePermission("invoices.update", { organizationId });
 
   const supabase = await getSupabaseServerClient();
-  const { data: current } = await supabase.from("invoices").select("status").eq("id", invoiceId).maybeSingle();
+  const { data: current } = await supabase
+    .from("invoices")
+    .select("status")
+    .eq("id", invoiceId)
+    .maybeSingle();
   if (!current) throw new NotFoundError("Invoice not found, or you don't have access to it.");
-  if (current.status !== "draft") throw new ForbiddenError("Only a draft invoice can be cancelled this way.");
+  if (current.status !== "draft")
+    throw new ForbiddenError("Only a draft invoice can be cancelled this way.");
 
   const { data, error } = await supabase
     .from("invoices")

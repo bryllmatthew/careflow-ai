@@ -1,6 +1,10 @@
 import "server-only";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
-import type { FollowUpStatus, FollowUpType, FollowUpPriority } from "@/lib/validation/followup.schema";
+import type {
+  FollowUpStatus,
+  FollowUpType,
+  FollowUpPriority,
+} from "@/lib/validation/followup.schema";
 
 export const FOLLOWUPS_PAGE_SIZE = 20;
 
@@ -93,7 +97,8 @@ export async function listFollowUps(
   if (filters.clinicId) query = query.eq("clinic_id", filters.clinicId);
   if (filters.assignedTo) query = query.eq("assigned_to", filters.assignedTo);
   if (filters.type && filters.type !== "all") query = query.eq("type", filters.type);
-  if (filters.priority && filters.priority !== "all") query = query.eq("priority", filters.priority);
+  if (filters.priority && filters.priority !== "all")
+    query = query.eq("priority", filters.priority);
 
   if (filters.status && filters.status !== "all") {
     query = query.eq("status", filters.status);
@@ -101,7 +106,11 @@ export async function listFollowUps(
 
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-  const startOfTomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString();
+  const startOfTomorrow = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() + 1,
+  ).toISOString();
 
   if (filters.bucket === "overdue") {
     query = query.lt("due_at", now.toISOString()).in("status", ["pending", "in_progress"]);

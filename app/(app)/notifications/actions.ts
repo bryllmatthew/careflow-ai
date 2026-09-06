@@ -25,6 +25,9 @@ export async function markNotificationReadAction(notificationId: string) {
 
 export async function markAllNotificationsReadAction() {
   const supabase = await getSupabaseServerClient();
-  await supabase.from("notifications").update({ read_at: new Date().toISOString() }).is("read_at", null);
+  await supabase
+    .from("notifications")
+    .update({ read_at: new Date().toISOString() })
+    .is("read_at", null);
   revalidatePath("/", "layout");
 }

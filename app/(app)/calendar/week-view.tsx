@@ -59,7 +59,9 @@ export function WeekView({
                   className="hover:bg-muted rounded-md border p-1.5 text-left text-xs"
                 >
                   <p className="font-medium">
-                    {new Intl.DateTimeFormat(undefined, { timeStyle: "short" }).format(new Date(a.startAt))}
+                    {new Intl.DateTimeFormat(undefined, { timeStyle: "short" }).format(
+                      new Date(a.startAt),
+                    )}
                   </p>
                   <p className="truncate">{a.patientName}</p>
                   <p className="text-muted-foreground truncate">{a.serviceName}</p>

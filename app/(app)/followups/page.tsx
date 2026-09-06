@@ -14,8 +14,16 @@ import {
   FOLLOWUPS_PAGE_SIZE,
   type FollowUpListFilters,
 } from "./queries";
-import type { FollowUpStatus, FollowUpType, FollowUpPriority } from "@/lib/validation/followup.schema";
-import { followUpStatuses, followUpTypes, followUpPriorities } from "@/lib/validation/followup.schema";
+import type {
+  FollowUpStatus,
+  FollowUpType,
+  FollowUpPriority,
+} from "@/lib/validation/followup.schema";
+import {
+  followUpStatuses,
+  followUpTypes,
+  followUpPriorities,
+} from "@/lib/validation/followup.schema";
 import { FollowUpsFilterBar } from "./followups-filter-bar";
 import { FollowUpsTable } from "./followups-table";
 import { FollowUpFormDialog } from "./followup-form-dialog";

@@ -58,7 +58,10 @@ export function InvoicesFilterBar({ clinics }: { clinics: { id: string; name: st
       </div>
 
       {clinics.length > 1 && (
-        <Select value={searchParams.get("clinic") ?? ALL} onValueChange={(v) => updateParams({ clinic: v })}>
+        <Select
+          value={searchParams.get("clinic") ?? ALL}
+          onValueChange={(v) => updateParams({ clinic: v })}
+        >
           <SelectTrigger className="w-full sm:w-44">
             <SelectValue placeholder="Clinic" />
           </SelectTrigger>
@@ -73,7 +76,10 @@ export function InvoicesFilterBar({ clinics }: { clinics: { id: string; name: st
         </Select>
       )}
 
-      <Select value={searchParams.get("status") ?? ALL} onValueChange={(v) => updateParams({ status: v })}>
+      <Select
+        value={searchParams.get("status") ?? ALL}
+        onValueChange={(v) => updateParams({ status: v })}
+      >
         <SelectTrigger className="w-full sm:w-44">
           <SelectValue placeholder="Status" />
         </SelectTrigger>

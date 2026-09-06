@@ -36,7 +36,11 @@ export function InvoicesTable({ invoices }: { invoices: InvoiceRow[] }) {
               </Link>
             </TableCell>
             <TableCell className="text-muted-foreground">
-              {inv.issueDate ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(inv.issueDate)) : "—"}
+              {inv.issueDate
+                ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(
+                    new Date(inv.issueDate),
+                  )
+                : "—"}
             </TableCell>
             <TableCell>
               <Link href={`/patients/${inv.patientId}`} className="hover:underline">
@@ -50,14 +54,20 @@ export function InvoicesTable({ invoices }: { invoices: InvoiceRow[] }) {
             <TableCell className="text-muted-foreground">
               <Money value={inv.amountPaid} currency={inv.currency} />
             </TableCell>
-            <TableCell className={Number(inv.balance) > 0 ? "font-medium" : "text-muted-foreground"}>
+            <TableCell
+              className={Number(inv.balance) > 0 ? "font-medium" : "text-muted-foreground"}
+            >
               <Money value={inv.balance} currency={inv.currency} />
             </TableCell>
             <TableCell>
               <InvoiceStatusBadge status={inv.status} isOverdue={inv.isOverdue} />
             </TableCell>
             <TableCell className="text-muted-foreground">
-              {inv.dueDate ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(inv.dueDate)) : "—"}
+              {inv.dueDate
+                ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(
+                    new Date(inv.dueDate),
+                  )
+                : "—"}
             </TableCell>
           </TableRow>
         ))}

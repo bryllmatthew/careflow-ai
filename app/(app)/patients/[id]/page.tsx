@@ -29,11 +29,7 @@ import { InvoicesTable } from "../../invoices/invoices-table";
 import { listPatientPayments, listPatientRefunds } from "../../payments/queries";
 import { PaymentsTable } from "../../payments/payments-table";
 
-export default async function PatientProfilePage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function PatientProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const auth = await getAuthContext();
   const organizationId = auth!.memberships[0]!.organizationId;
@@ -93,8 +89,12 @@ export default async function PatientProfilePage({
 
   const shortId = patient.id.slice(-8).toUpperCase();
   const timeline = buildPatientTimeline(patient, followUps, invoices, payments, refunds);
-  const upcomingFollowUps = followUps.filter((f) => f.status === "pending" || f.status === "in_progress");
-  const followUpHistory = followUps.filter((f) => f.status === "completed" || f.status === "cancelled");
+  const upcomingFollowUps = followUps.filter(
+    (f) => f.status === "pending" || f.status === "in_progress",
+  );
+  const followUpHistory = followUps.filter(
+    (f) => f.status === "completed" || f.status === "cancelled",
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -108,7 +108,8 @@ export default async function PatientProfilePage({
           <div className="flex flex-wrap items-center gap-4 text-sm">
             <PatientStatusBadge status={patient.status} />
             <span className="text-muted-foreground">
-              {[patient.phone, patient.email].filter(Boolean).join(" · ") || "No contact info on file"}
+              {[patient.phone, patient.email].filter(Boolean).join(" · ") ||
+                "No contact info on file"}
             </span>
           </div>
           {outstandingBalance !== null && Number(outstandingBalance) > 0 && (
@@ -252,7 +253,11 @@ export default async function PatientProfilePage({
             </Card>
           ) : payments.length === 0 ? (
             <Card className="p-0">
-              <EmptyState icon={Wallet} title="No payments recorded" description="Payments made by this patient will appear here." />
+              <EmptyState
+                icon={Wallet}
+                title="No payments recorded"
+                description="Payments made by this patient will appear here."
+              />
             </Card>
           ) : (
             <Card className="p-0">

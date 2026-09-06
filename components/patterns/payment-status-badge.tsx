@@ -12,6 +12,7 @@ const variants: Record<PaymentStatus, "default" | "secondary" | "outline" | "des
 };
 
 export function PaymentStatusBadge({ status }: { status: string }) {
-  const s = (status as PaymentStatus) in paymentStatusLabels ? (status as PaymentStatus) : "pending";
+  const s =
+    (status as PaymentStatus) in paymentStatusLabels ? (status as PaymentStatus) : "pending";
   return <Badge variant={variants[s]}>{paymentStatusLabels[s]}</Badge>;
 }

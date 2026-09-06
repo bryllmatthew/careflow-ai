@@ -73,10 +73,7 @@ export async function listPatients(
     query = query.ilike("search_text", `%${filters.q.trim().toLowerCase()}%`);
   }
 
-  const { data, count } = await query
-    .order("last_name")
-    .order("first_name")
-    .range(from, to);
+  const { data, count } = await query.order("last_name").order("first_name").range(from, to);
 
   const rows: PatientListRow[] = (data ?? []).map((p) => ({
     id: p.id,

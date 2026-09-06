@@ -56,7 +56,9 @@ export function FollowUpFormDialog({
   defaultClinicId?: string;
 }) {
   const [open, setOpen] = useState(false);
-  const [patient, setPatient] = useState<{ id: string; name: string } | null>(defaultPatient ?? null);
+  const [patient, setPatient] = useState<{ id: string; name: string } | null>(
+    defaultPatient ?? null,
+  );
   const [clinicId, setClinicId] = useState(defaultClinicId ?? clinics[0]?.id ?? "");
   const [type, setType] = useState<FollowUpFormInput["type"]>("general");
   const [priority, setPriority] = useState<FollowUpFormInput["priority"]>("normal");
@@ -211,7 +213,10 @@ export function FollowUpFormDialog({
 
             <div className="flex flex-col gap-2">
               <Label htmlFor="fu-assigned">Assign to</Label>
-              <Select value={assignedTo || "unassigned"} onValueChange={(v) => setAssignedTo(v === "unassigned" ? "" : v)}>
+              <Select
+                value={assignedTo || "unassigned"}
+                onValueChange={(v) => setAssignedTo(v === "unassigned" ? "" : v)}
+              >
                 <SelectTrigger id="fu-assigned" className="w-full">
                   <SelectValue />
                 </SelectTrigger>
@@ -228,7 +233,12 @@ export function FollowUpFormDialog({
 
             <div className="flex flex-col gap-2">
               <Label htmlFor="fu-notes">Notes</Label>
-              <Textarea id="fu-notes" rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
+              <Textarea
+                id="fu-notes"
+                rows={3}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+              />
             </div>
           </div>
 

@@ -35,17 +35,25 @@ export default async function CalendarPage({
       ? { startISO: dayStartISO(date), endISO: dayEndISO(date) }
       : weekRangeISO(startOfWeek(date));
 
-  const [clinics, practitioners, services, appointments, canCreate, canUpdate, canCancel, canReschedule] =
-    await Promise.all([
-      listClinicOptions(organizationId),
-      listPractitionerOptions(organizationId),
-      listServiceOptions(organizationId),
-      listAppointmentsForRange(organizationId, { ...range, clinicId }),
-      can("appointments.create", { organizationId }),
-      can("appointments.update", { organizationId }),
-      can("appointments.cancel", { organizationId }),
-      can("appointments.reschedule", { organizationId }),
-    ]);
+  const [
+    clinics,
+    practitioners,
+    services,
+    appointments,
+    canCreate,
+    canUpdate,
+    canCancel,
+    canReschedule,
+  ] = await Promise.all([
+    listClinicOptions(organizationId),
+    listPractitionerOptions(organizationId),
+    listServiceOptions(organizationId),
+    listAppointmentsForRange(organizationId, { ...range, clinicId }),
+    can("appointments.create", { organizationId }),
+    can("appointments.update", { organizationId }),
+    can("appointments.cancel", { organizationId }),
+    can("appointments.reschedule", { organizationId }),
+  ]);
 
   return (
     <div className="flex flex-col gap-6">

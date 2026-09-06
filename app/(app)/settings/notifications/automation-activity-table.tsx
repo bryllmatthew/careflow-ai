@@ -47,9 +47,10 @@ export function AutomationActivityTable({ rows }: { rows: AutomationActivityRow[
         {rows.map((r) => (
           <TableRow key={`${r.kind}-${r.id}`}>
             <TableCell className="text-muted-foreground">
-              {new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(
-                new Date(r.timestamp),
-              )}
+              {new Intl.DateTimeFormat(undefined, {
+                dateStyle: "medium",
+                timeStyle: "short",
+              }).format(new Date(r.timestamp))}
             </TableCell>
             <TableCell>
               {r.kind === "reminder"
@@ -58,8 +59,12 @@ export function AutomationActivityTable({ rows }: { rows: AutomationActivityRow[
             </TableCell>
             <TableCell>{r.patientName}</TableCell>
             <TableCell>
-              <Badge variant={STATUS_VARIANT[r.status] ?? "outline"}>{r.status.replaceAll("_", " ")}</Badge>
-              {r.failureReason && <p className="text-destructive mt-0.5 text-xs">{r.failureReason}</p>}
+              <Badge variant={STATUS_VARIANT[r.status] ?? "outline"}>
+                {r.status.replaceAll("_", " ")}
+              </Badge>
+              {r.failureReason && (
+                <p className="text-destructive mt-0.5 text-xs">{r.failureReason}</p>
+              )}
             </TableCell>
           </TableRow>
         ))}

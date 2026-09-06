@@ -86,7 +86,13 @@ export function InvoiceDiscountTaxEditor({
               className="w-28"
             />
           )}
-          <Button type="button" size="sm" variant="outline" disabled={pending} onClick={saveDiscount}>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={pending}
+            onClick={saveDiscount}
+          >
             Apply
           </Button>
         </div>

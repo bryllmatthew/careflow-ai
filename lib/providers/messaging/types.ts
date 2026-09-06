@@ -16,8 +16,7 @@ export type SendMessageInput = {
 };
 
 export type SendMessageResult =
-  | { success: true; providerRef?: string }
-  | { success: false; error: string; retryable: boolean };
+  { success: true; providerRef?: string } | { success: false; error: string; retryable: boolean };
 
 export interface MessagingProvider {
   send(input: SendMessageInput): Promise<SendMessageResult>;

@@ -65,10 +65,13 @@ export const discountSchema = z
       .optional()
       .transform((v) => (v ? v : undefined)),
   })
-  .refine((v) => !v.discountType || (v.discountValue && /^\d+(\.\d{1,2})?$/.test(v.discountValue)), {
-    message: "Enter a valid discount value",
-    path: ["discountValue"],
-  })
+  .refine(
+    (v) => !v.discountType || (v.discountValue && /^\d+(\.\d{1,2})?$/.test(v.discountValue)),
+    {
+      message: "Enter a valid discount value",
+      path: ["discountValue"],
+    },
+  )
   .refine((v) => v.discountType !== "percentage" || Number(v.discountValue) <= 100, {
     message: "A percentage discount can't exceed 100%",
     path: ["discountValue"],
@@ -76,5 +79,8 @@ export const discountSchema = z
 export type DiscountInput = z.infer<typeof discountSchema>;
 
 export const taxSchema = z.object({
-  taxRate: z.coerce.number().min(0, "Tax rate can't be negative").max(100, "Tax rate can't exceed 100%"),
+  taxRate: z.coerce
+    .number()
+    .min(0, "Tax rate can't be negative")
+    .max(100, "Tax rate can't exceed 100%"),
 });

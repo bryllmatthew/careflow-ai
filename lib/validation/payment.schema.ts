@@ -20,7 +20,14 @@ export const paymentStatusLabels: Record<PaymentStatus, string> = {
   refunded: "Refunded",
 };
 
-export const paymentMethods = ["cash", "bank_transfer", "card", "ewallet", "online", "other"] as const;
+export const paymentMethods = [
+  "cash",
+  "bank_transfer",
+  "card",
+  "ewallet",
+  "online",
+  "other",
+] as const;
 export type PaymentMethod = (typeof paymentMethods)[number];
 export const paymentMethodLabels: Record<PaymentMethod, string> = {
   cash: "Cash",
@@ -38,7 +45,10 @@ export type ManualPaymentMethod = (typeof manualPaymentMethods)[number];
 const moneyString = z
   .string()
   .trim()
-  .refine((v) => /^\d+(\.\d{1,2})?$/.test(v) && Number(v) > 0, "Enter a valid amount greater than 0");
+  .refine(
+    (v) => /^\d+(\.\d{1,2})?$/.test(v) && Number(v) > 0,
+    "Enter a valid amount greater than 0",
+  );
 
 export const recordManualPaymentSchema = z.object({
   amount: moneyString,

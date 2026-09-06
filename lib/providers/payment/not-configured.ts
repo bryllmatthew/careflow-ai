@@ -31,7 +31,9 @@ import type {
 export class NotConfiguredPaymentProvider implements PaymentProvider {
   readonly key: PaymentProviderKey = "generic";
 
-  async createPaymentSession(_input: CreatePaymentSessionInput): Promise<CreatePaymentSessionResult> {
+  async createPaymentSession(
+    _input: CreatePaymentSessionInput,
+  ): Promise<CreatePaymentSessionResult> {
     return { success: false, error: "Online payments are not configured.", retryable: false };
   }
 
@@ -39,7 +41,10 @@ export class NotConfiguredPaymentProvider implements PaymentProvider {
     return { status: "not_found" };
   }
 
-  async refundPayment(_providerTransactionId: string, _amount: string): Promise<RefundPaymentResult> {
+  async refundPayment(
+    _providerTransactionId: string,
+    _amount: string,
+  ): Promise<RefundPaymentResult> {
     return { success: false, error: "Online payments are not configured.", retryable: false };
   }
 
@@ -63,11 +68,18 @@ export class NotConfiguredPaymentProvider implements PaymentProvider {
         eventId: data.event_id,
         eventType: data.event_type,
         providerPaymentIntentId:
-          typeof data.provider_payment_intent_id === "string" ? data.provider_payment_intent_id : undefined,
+          typeof data.provider_payment_intent_id === "string"
+            ? data.provider_payment_intent_id
+            : undefined,
         providerTransactionId:
-          typeof data.provider_transaction_id === "string" ? data.provider_transaction_id : undefined,
+          typeof data.provider_transaction_id === "string"
+            ? data.provider_transaction_id
+            : undefined,
         amount: typeof data.amount === "string" ? data.amount : undefined,
-        status: data.status === "succeeded" || data.status === "failed" || data.status === "cancelled" ? data.status : undefined,
+        status:
+          data.status === "succeeded" || data.status === "failed" || data.status === "cancelled"
+            ? data.status
+            : undefined,
       };
     } catch {
       return null;

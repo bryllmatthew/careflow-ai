@@ -6,7 +6,13 @@ import { toast } from "sonner";
 import type { AutomationToggle } from "./queries";
 import { toggleAutomationGroupAction } from "./actions";
 
-export function AutomationToggleList({ toggles, canManage }: { toggles: AutomationToggle[]; canManage: boolean }) {
+export function AutomationToggleList({
+  toggles,
+  canManage,
+}: {
+  toggles: AutomationToggle[];
+  canManage: boolean;
+}) {
   const [pending, startTransition] = useTransition();
 
   const reminders = toggles.filter((t) => t.actionType === "reminder");

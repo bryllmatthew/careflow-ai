@@ -11,7 +11,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { paymentStatuses, paymentStatusLabels, paymentMethods, paymentMethodLabels } from "@/lib/validation/payment.schema";
+import {
+  paymentStatuses,
+  paymentStatusLabels,
+  paymentMethods,
+  paymentMethodLabels,
+} from "@/lib/validation/payment.schema";
 
 const ALL = "all";
 
@@ -58,7 +63,10 @@ export function PaymentsFilterBar({ clinics }: { clinics: { id: string; name: st
       </div>
 
       {clinics.length > 1 && (
-        <Select value={searchParams.get("clinic") ?? ALL} onValueChange={(v) => updateParams({ clinic: v })}>
+        <Select
+          value={searchParams.get("clinic") ?? ALL}
+          onValueChange={(v) => updateParams({ clinic: v })}
+        >
           <SelectTrigger className="w-full sm:w-44">
             <SelectValue placeholder="Clinic" />
           </SelectTrigger>
@@ -73,7 +81,10 @@ export function PaymentsFilterBar({ clinics }: { clinics: { id: string; name: st
         </Select>
       )}
 
-      <Select value={searchParams.get("method") ?? ALL} onValueChange={(v) => updateParams({ method: v })}>
+      <Select
+        value={searchParams.get("method") ?? ALL}
+        onValueChange={(v) => updateParams({ method: v })}
+      >
         <SelectTrigger className="w-full sm:w-40">
           <SelectValue placeholder="Method" />
         </SelectTrigger>
@@ -87,7 +98,10 @@ export function PaymentsFilterBar({ clinics }: { clinics: { id: string; name: st
         </SelectContent>
       </Select>
 
-      <Select value={searchParams.get("status") ?? ALL} onValueChange={(v) => updateParams({ status: v })}>
+      <Select
+        value={searchParams.get("status") ?? ALL}
+        onValueChange={(v) => updateParams({ status: v })}
+      >
         <SelectTrigger className="w-full sm:w-44">
           <SelectValue placeholder="Status" />
         </SelectTrigger>

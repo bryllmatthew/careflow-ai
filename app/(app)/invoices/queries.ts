@@ -136,7 +136,10 @@ export async function listInvoices(
   if (filters.patientId) query = query.eq("patient_id", filters.patientId);
 
   if (filters.status === "overdue") {
-    query = query.eq("status", "issued").lt("due_date", new Date().toISOString().slice(0, 10)).gt("balance", 0);
+    query = query
+      .eq("status", "issued")
+      .lt("due_date", new Date().toISOString().slice(0, 10))
+      .gt("balance", 0);
   } else if (filters.status && filters.status !== "all") {
     query = query.eq("status", filters.status);
   }
@@ -149,16 +152,31 @@ export async function listInvoices(
   if (filters.q && filters.q.trim()) {
     const q = filters.q.trim();
     const [byNumber, matchingPatients] = await Promise.all([
-      supabase.from("invoices").select("id").eq("organization_id", organizationId).ilike("invoice_number", `%${q}%`),
-      supabase.from("patients").select("id").eq("organization_id", organizationId).ilike("search_text", `%${q.toLowerCase()}%`),
+      supabase
+        .from("invoices")
+        .select("id")
+        .eq("organization_id", organizationId)
+        .ilike("invoice_number", `%${q}%`),
+      supabase
+        .from("patients")
+        .select("id")
+        .eq("organization_id", organizationId)
+        .ilike("search_text", `%${q.toLowerCase()}%`),
     ]);
     const patientIds = (matchingPatients.data ?? []).map((p) => p.id);
     const byPatient =
       patientIds.length > 0
-        ? await supabase.from("invoices").select("id").eq("organization_id", organizationId).in("patient_id", patientIds)
+        ? await supabase
+            .from("invoices")
+            .select("id")
+            .eq("organization_id", organizationId)
+            .in("patient_id", patientIds)
         : { data: [] as { id: string }[] };
 
-    const matchedIds = new Set([...(byNumber.data ?? []).map((r) => r.id), ...(byPatient.data ?? []).map((r) => r.id)]);
+    const matchedIds = new Set([
+      ...(byNumber.data ?? []).map((r) => r.id),
+      ...(byPatient.data ?? []).map((r) => r.id),
+    ]);
     if (matchedIds.size === 0) return { rows: [], total: 0 };
     query = query.in("id", Array.from(matchedIds));
   }
@@ -188,7 +206,11 @@ export type InvoiceDetail = InvoiceRow & {
 export async function getInvoiceById(invoiceId: string): Promise<InvoiceDetail | null> {
   const supabase = await getSupabaseServerClient();
   const [{ data: invoice }, { data: items }] = await Promise.all([
-    supabase.from("invoices").select(`${INVOICE_SELECT}, created_by`).eq("id", invoiceId).maybeSingle(),
+    supabase
+      .from("invoices")
+      .select(`${INVOICE_SELECT}, created_by`)
+      .eq("id", invoiceId)
+      .maybeSingle(),
     supabase
       .from("invoice_items")
       .select("id, service_id, description, quantity, unit_price, line_total")
@@ -238,9 +260,7 @@ export async function getPatientOutstandingBalance(patientId: string): Promise<s
 }
 
 /** For the dashboard and Sales module (docs/PRODUCT_SPEC.md Phase 5 sections 19/26) -- DB-aggregated, never loaded row-by-row into the browser. */
-export async function getSalesMetrics(
-  organizationId: string,
-): Promise<{
+export async function getSalesMetrics(organizationId: string): Promise<{
   salesToday: string;
   salesThisMonth: string;
   outstanding: string;
@@ -250,7 +270,9 @@ export async function getSalesMetrics(
 }> {
   const supabase = await getSupabaseServerClient();
   const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString().slice(0, 10);
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    .toISOString()
+    .slice(0, 10);
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
   const today = now.toISOString().slice(0, 10);
 

@@ -64,7 +64,11 @@ export function FollowUpDetailSheet({
   function saveNotes() {
     startTransition(async () => {
       try {
-        await updateFollowUpStatusAction(followUp!.id, followUp!.status as "pending" | "in_progress", notes);
+        await updateFollowUpStatusAction(
+          followUp!.id,
+          followUp!.status as "pending" | "in_progress",
+          notes,
+        );
         toast.success("Notes saved.");
       } catch (err) {
         toast.error(err instanceof Error ? err.message : "Couldn't save notes.");
@@ -87,8 +91,13 @@ export function FollowUpDetailSheet({
     <Sheet open={followUp !== null} onOpenChange={onOpenChange}>
       <SheetContent>
         <SheetHeader>
-          <SheetTitle>{followUpTypeLabels[followUp.type as keyof typeof followUpTypeLabels] ?? followUp.type}</SheetTitle>
-          <Link href={`/patients/${followUp.patientId}`} className="text-primary text-sm hover:underline">
+          <SheetTitle>
+            {followUpTypeLabels[followUp.type as keyof typeof followUpTypeLabels] ?? followUp.type}
+          </SheetTitle>
+          <Link
+            href={`/patients/${followUp.patientId}`}
+            className="text-primary text-sm hover:underline"
+          >
             {followUp.patientName}
           </Link>
         </SheetHeader>
@@ -102,9 +111,10 @@ export function FollowUpDetailSheet({
           <dl className="grid grid-cols-3 gap-y-2 text-sm">
             <dt className="text-muted-foreground">Due</dt>
             <dd className="col-span-2">
-              {new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(
-                new Date(followUp.dueAt),
-              )}
+              {new Intl.DateTimeFormat(undefined, {
+                dateStyle: "medium",
+                timeStyle: "short",
+              }).format(new Date(followUp.dueAt))}
             </dd>
             <dt className="text-muted-foreground">Clinic</dt>
             <dd className="col-span-2">{followUp.clinicName ?? "—"}</dd>
@@ -137,8 +147,19 @@ export function FollowUpDetailSheet({
           <Separator />
           <div className="flex flex-col gap-2">
             <Label htmlFor="fu-notes">Notes</Label>
-            <Textarea id="fu-notes" rows={4} value={notes} onChange={(e) => setNotes(e.target.value)} />
-            <Button size="sm" variant="outline" disabled={pending} onClick={saveNotes} className="self-start">
+            <Textarea
+              id="fu-notes"
+              rows={4}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={pending}
+              onClick={saveNotes}
+              className="self-start"
+            >
               Save notes
             </Button>
           </div>
@@ -148,7 +169,12 @@ export function FollowUpDetailSheet({
           <SheetFooter>
             <div className="flex flex-wrap gap-2">
               {followUp.status === "pending" && (
-                <Button size="sm" variant="outline" disabled={pending} onClick={() => setStatus("in_progress")}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={pending}
+                  onClick={() => setStatus("in_progress")}
+                >
                   Mark in progress
                 </Button>
               )}

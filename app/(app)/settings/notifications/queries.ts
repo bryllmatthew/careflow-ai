@@ -1,7 +1,12 @@
 import "server-only";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
-type RuleConfig = { reminder_type?: string; followup_type?: string; hours_before?: number; due_in_hours?: number };
+type RuleConfig = {
+  reminder_type?: string;
+  followup_type?: string;
+  hours_before?: number;
+  due_in_hours?: number;
+};
 
 export type AutomationToggle = {
   /** config.reminder_type or config.followup_type -- what templates key against. */
@@ -48,7 +53,9 @@ export async function getAutomationToggles(organizationId: string): Promise<Auto
     }
   }
 
-  return DISPLAY_ORDER.map((key) => groups.get(key)).filter((t): t is AutomationToggle => t !== undefined);
+  return DISPLAY_ORDER.map((key) => groups.get(key)).filter(
+    (t): t is AutomationToggle => t !== undefined,
+  );
 }
 
 const LABELS: Record<string, string> = {
@@ -59,7 +66,13 @@ const LABELS: Record<string, string> = {
   no_show: "After no-show",
 };
 
-const DISPLAY_ORDER = ["confirmation", "reminder_24h", "reminder_2h", "post_appointment", "no_show"];
+const DISPLAY_ORDER = [
+  "confirmation",
+  "reminder_24h",
+  "reminder_2h",
+  "post_appointment",
+  "no_show",
+];
 
 export type ReminderTemplateRow = {
   id: string;
@@ -71,7 +84,9 @@ export type ReminderTemplateRow = {
   enabled: boolean;
 };
 
-export async function listReminderTemplates(organizationId: string): Promise<ReminderTemplateRow[]> {
+export async function listReminderTemplates(
+  organizationId: string,
+): Promise<ReminderTemplateRow[]> {
   const supabase = await getSupabaseServerClient();
   const { data } = await supabase
     .from("reminder_templates")
@@ -101,13 +116,18 @@ export type AutomationActivityRow = {
 };
 
 /** A recent, read-only feed across both reminders and follow-ups (docs/PRODUCT_SPEC.md Phase 4 section 23). */
-export async function listAutomationActivity(organizationId: string, limit = 25): Promise<AutomationActivityRow[]> {
+export async function listAutomationActivity(
+  organizationId: string,
+  limit = 25,
+): Promise<AutomationActivityRow[]> {
   const supabase = await getSupabaseServerClient();
 
   const [remindersRes, followUpsRes] = await Promise.all([
     supabase
       .from("reminders")
-      .select("id, reminder_type, status, failure_reason, created_at, patients(first_name, last_name)")
+      .select(
+        "id, reminder_type, status, failure_reason, created_at, patients(first_name, last_name)",
+      )
       .eq("organization_id", organizationId)
       .order("created_at", { ascending: false })
       .limit(limit),

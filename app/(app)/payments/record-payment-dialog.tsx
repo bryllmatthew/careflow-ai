@@ -24,10 +24,22 @@ import {
 } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { manualPaymentMethods, paymentMethodLabels, type ManualPaymentMethod } from "@/lib/validation/payment.schema";
+import {
+  manualPaymentMethods,
+  paymentMethodLabels,
+  type ManualPaymentMethod,
+} from "@/lib/validation/payment.schema";
 import { recordManualPaymentAction } from "./actions";
 
-export function RecordPaymentDialog({ invoiceId, balance, currency }: { invoiceId: string; balance: string; currency: string }) {
+export function RecordPaymentDialog({
+  invoiceId,
+  balance,
+  currency,
+}: {
+  invoiceId: string;
+  balance: string;
+  currency: string;
+}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState(balance);
@@ -77,7 +89,10 @@ export function RecordPaymentDialog({ invoiceId, balance, currency }: { invoiceI
           <DialogTitle>Record a manual payment</DialogTitle>
           <DialogDescription>
             For cash, bank transfer, or other offline payment already received. Outstanding balance:{" "}
-            {new Intl.NumberFormat(undefined, { style: "currency", currency }).format(Number(balance))}.
+            {new Intl.NumberFormat(undefined, { style: "currency", currency }).format(
+              Number(balance),
+            )}
+            .
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-3 py-2">
@@ -88,7 +103,12 @@ export function RecordPaymentDialog({ invoiceId, balance, currency }: { invoiceI
           )}
           <div className="flex flex-col gap-1">
             <Label htmlFor="payment-amount">Amount</Label>
-            <Input id="payment-amount" value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" />
+            <Input
+              id="payment-amount"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              inputMode="decimal"
+            />
           </div>
           <div className="flex flex-col gap-1">
             <Label>Method</Label>

@@ -1,5 +1,12 @@
 import Link from "next/link";
-import { Wallet, CalendarDays, CalendarRange, XCircle, AlertTriangle, ClipboardCheck } from "lucide-react";
+import {
+  Wallet,
+  CalendarDays,
+  CalendarRange,
+  XCircle,
+  AlertTriangle,
+  ClipboardCheck,
+} from "lucide-react";
 import { getAuthContext } from "@/lib/auth/session";
 import { requirePermission, can } from "@/lib/auth/require-permission";
 import { PageHeader } from "@/components/patterns/page-header";
@@ -10,7 +17,12 @@ import { PermissionGate } from "@/components/patterns/permission-gate";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { listClinicOptions } from "../patients/queries";
-import { listPayments, getPaymentMetrics, PAYMENTS_PAGE_SIZE, type PaymentListFilters } from "./queries";
+import {
+  listPayments,
+  getPaymentMetrics,
+  PAYMENTS_PAGE_SIZE,
+  type PaymentListFilters,
+} from "./queries";
 import type { PaymentStatus } from "@/lib/validation/payment.schema";
 import { paymentStatuses } from "@/lib/validation/payment.schema";
 import { PaymentsFilterBar } from "./payments-filter-bar";
@@ -47,7 +59,9 @@ export default async function PaymentsPage({
     can("payments.reconcile", { organizationId }),
   ]);
 
-  const hasActiveFilters = Boolean(filters.q || filters.clinicId || filters.status || filters.paymentMethod);
+  const hasActiveFilters = Boolean(
+    filters.q || filters.clinicId || filters.status || filters.paymentMethod,
+  );
 
   const buildHref = (page: number) => {
     const qs = new URLSearchParams();
@@ -81,15 +95,23 @@ export default async function PaymentsPage({
         <StatTile
           label="Today"
           icon={CalendarDays}
-          value={new Intl.NumberFormat(undefined, { style: "currency", currency: "PHP" }).format(Number(metrics.paymentsToday))}
+          value={new Intl.NumberFormat(undefined, { style: "currency", currency: "PHP" }).format(
+            Number(metrics.paymentsToday),
+          )}
         />
         <StatTile
           label="This month"
           icon={CalendarRange}
-          value={new Intl.NumberFormat(undefined, { style: "currency", currency: "PHP" }).format(Number(metrics.paymentsThisMonth))}
+          value={new Intl.NumberFormat(undefined, { style: "currency", currency: "PHP" }).format(
+            Number(metrics.paymentsThisMonth),
+          )}
         />
         <StatTile label="Failed (this month)" icon={XCircle} value={String(metrics.failedCount)} />
-        <StatTile label="Needs review" icon={AlertTriangle} value={String(metrics.pendingReviewCount)} />
+        <StatTile
+          label="Needs review"
+          icon={AlertTriangle}
+          value={String(metrics.pendingReviewCount)}
+        />
       </div>
 
       <PaymentsFilterBar clinics={clinics} />
@@ -107,7 +129,12 @@ export default async function PaymentsPage({
       ) : (
         <Card className="gap-0 p-0">
           <PaymentsTable payments={rows} />
-          <Pagination page={filters.page ?? 1} pageSize={PAYMENTS_PAGE_SIZE} total={total} buildHref={buildHref} />
+          <Pagination
+            page={filters.page ?? 1}
+            pageSize={PAYMENTS_PAGE_SIZE}
+            total={total}
+            buildHref={buildHref}
+          />
         </Card>
       )}
     </div>

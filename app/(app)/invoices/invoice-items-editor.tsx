@@ -100,7 +100,9 @@ export function InvoiceItemsEditor({
                             try {
                               await removeInvoiceItemAction(item.id, invoiceId);
                             } catch (err) {
-                              toast.error(err instanceof Error ? err.message : "Couldn't remove line.");
+                              toast.error(
+                                err instanceof Error ? err.message : "Couldn't remove line.",
+                              );
                             }
                           })
                         }
@@ -173,10 +175,23 @@ function ItemEditRow({
       <TableCell className="text-muted-foreground text-xs">Recalculated on save</TableCell>
       <TableCell>
         <div className="flex gap-1">
-          <Button type="button" variant="ghost" size="icon-sm" disabled={pending} onClick={save} aria-label="Save">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            disabled={pending}
+            onClick={save}
+            aria-label="Save"
+          >
             <Pencil className="size-3.5" />
           </Button>
-          <Button type="button" variant="ghost" size="icon-sm" onClick={onDone} aria-label="Cancel edit">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            onClick={onDone}
+            aria-label="Cancel edit"
+          >
             <X className="size-3.5" />
           </Button>
         </div>
@@ -222,13 +237,19 @@ function AddItemForm({ invoiceId, services }: { invoiceId: string; services: Ser
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-2 rounded-lg border p-3 sm:flex-row sm:items-end">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-col gap-2 rounded-lg border p-3 sm:flex-row sm:items-end"
+    >
       {services.length > 0 && (
         <div className="flex flex-col gap-1">
           <Label htmlFor="item-service" className="text-xs">
             Service
           </Label>
-          <Select value={serviceId || "custom"} onValueChange={(v) => pickService(v === "custom" ? "" : v)}>
+          <Select
+            value={serviceId || "custom"}
+            onValueChange={(v) => pickService(v === "custom" ? "" : v)}
+          >
             <SelectTrigger id="item-service" className="w-40">
               <SelectValue placeholder="Custom line" />
             </SelectTrigger>

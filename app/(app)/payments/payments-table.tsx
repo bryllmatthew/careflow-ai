@@ -31,9 +31,10 @@ export function PaymentsTable({ payments }: { payments: PaymentRow[] }) {
         {payments.map((p) => (
           <TableRow key={p.id}>
             <TableCell className="text-muted-foreground">
-              {new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(
-                new Date(p.createdAt),
-              )}
+              {new Intl.DateTimeFormat(undefined, {
+                dateStyle: "medium",
+                timeStyle: "short",
+              }).format(new Date(p.createdAt))}
             </TableCell>
             <TableCell className="font-medium">
               <Link href={`/invoices/${p.invoiceId}`} className="hover:underline">
@@ -55,7 +56,11 @@ export function PaymentsTable({ payments }: { payments: PaymentRow[] }) {
               <Money value={p.amount} currency={p.currency} />
             </TableCell>
             <TableCell className="text-muted-foreground">
-              {Number(p.refundedAmount) > 0 ? <Money value={p.refundedAmount} currency={p.currency} /> : "—"}
+              {Number(p.refundedAmount) > 0 ? (
+                <Money value={p.refundedAmount} currency={p.currency} />
+              ) : (
+                "—"
+              )}
             </TableCell>
             <TableCell>
               <PaymentStatusBadge status={p.status} />

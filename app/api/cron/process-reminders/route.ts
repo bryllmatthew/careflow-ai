@@ -41,7 +41,12 @@ type RawDueReminder = {
   reminder_type: string;
   channel: string;
   retry_count: number;
-  patients: { first_name: string; last_name: string; email: string | null; phone: string | null } | null;
+  patients: {
+    first_name: string;
+    last_name: string;
+    email: string | null;
+    phone: string | null;
+  } | null;
   appointments: {
     start_at: string;
     clinics: { name: string; address: string | null; timezone: string } | null;
@@ -63,7 +68,10 @@ function getProvider(channel: MessagingChannel): MessagingProvider {
 export async function POST(request: Request) {
   const secret = process.env.CRON_SECRET;
   if (!secret) {
-    return NextResponse.json({ error: "CRON_SECRET is not configured on the server." }, { status: 500 });
+    return NextResponse.json(
+      { error: "CRON_SECRET is not configured on the server." },
+      { status: 500 },
+    );
   }
   if (request.headers.get("authorization") !== `Bearer ${secret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -109,7 +117,10 @@ export async function POST(request: Request) {
     if (!template || !template.enabled) {
       await supabase
         .from("reminders")
-        .update({ status: "skipped", failure_reason: "No enabled template for this reminder/channel." })
+        .update({
+          status: "skipped",
+          failure_reason: "No enabled template for this reminder/channel.",
+        })
         .eq("id", reminder.id);
       skipped++;
       continue;
@@ -152,7 +163,12 @@ export async function POST(request: Request) {
     }
 
     const provider = getProvider(reminder.channel as MessagingChannel);
-    const result = await provider.send({ channel: reminder.channel as MessagingChannel, to, subject, body });
+    const result = await provider.send({
+      channel: reminder.channel as MessagingChannel,
+      to,
+      subject,
+      body,
+    });
 
     if (result.success) {
       await supabase

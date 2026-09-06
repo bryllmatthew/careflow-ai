@@ -48,11 +48,16 @@ export function weekRangeISO(mondayKey: string): { startISO: string; endISO: str
 }
 
 export function formatDayHeading(key: string): string {
-  return new Intl.DateTimeFormat(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" }).format(
-    parseDateKey(key),
-  );
+  return new Intl.DateTimeFormat(undefined, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  }).format(parseDateKey(key));
 }
 
 export function formatWeekdayShort(key: string): string {
-  return new Intl.DateTimeFormat(undefined, { weekday: "short", day: "numeric" }).format(parseDateKey(key));
+  return new Intl.DateTimeFormat(undefined, { weekday: "short", day: "numeric" }).format(
+    parseDateKey(key),
+  );
 }

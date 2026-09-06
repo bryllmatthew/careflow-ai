@@ -45,13 +45,15 @@ export function FollowUpsTable({
         <TableBody>
           {followUps.map((f) => {
             const isOverdue =
-              new Date(f.dueAt).getTime() < now && (f.status === "pending" || f.status === "in_progress");
+              new Date(f.dueAt).getTime() < now &&
+              (f.status === "pending" || f.status === "in_progress");
             return (
               <TableRow key={f.id} className="cursor-pointer" onClick={() => setSelected(f)}>
                 <TableCell className={isOverdue ? "text-destructive font-medium" : "font-medium"}>
-                  {new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(
-                    new Date(f.dueAt),
-                  )}
+                  {new Intl.DateTimeFormat(undefined, {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  }).format(new Date(f.dueAt))}
                   {isOverdue && " · Overdue"}
                 </TableCell>
                 <TableCell>{f.patientName}</TableCell>
@@ -61,7 +63,9 @@ export function FollowUpsTable({
                 <TableCell>
                   <FollowUpPriorityBadge priority={f.priority} />
                 </TableCell>
-                <TableCell className="text-muted-foreground">{f.assignedName ?? "Unassigned"}</TableCell>
+                <TableCell className="text-muted-foreground">
+                  {f.assignedName ?? "Unassigned"}
+                </TableCell>
                 <TableCell>
                   <FollowUpStatusBadge status={f.status} />
                 </TableCell>

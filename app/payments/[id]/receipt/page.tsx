@@ -36,8 +36,16 @@ export default async function PaymentReceiptPage({ params }: { params: Promise<{
 
   const supabase = await getSupabaseServerClient();
   const [{ data: clinic }, { data: org }] = await Promise.all([
-    supabase.from("clinics").select("name, address, phone, email").eq("id", payment.clinicId).maybeSingle(),
-    supabase.from("organizations").select("name").eq("id", auth.memberships[0]!.organizationId).maybeSingle(),
+    supabase
+      .from("clinics")
+      .select("name, address, phone, email")
+      .eq("id", payment.clinicId)
+      .maybeSingle(),
+    supabase
+      .from("organizations")
+      .select("name")
+      .eq("id", auth.memberships[0]!.organizationId)
+      .maybeSingle(),
   ]);
 
   const netReceived = (Number(payment.amount) - Number(payment.refundedAmount)).toFixed(2);
@@ -62,8 +70,12 @@ export default async function PaymentReceiptPage({ params }: { params: Promise<{
           <p className="text-muted-foreground text-sm">#{payment.id.slice(-8).toUpperCase()}</p>
           <p className="text-muted-foreground text-sm">
             {payment.paidAt
-              ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(payment.paidAt))
-              : new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(payment.createdAt))}
+              ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(
+                  new Date(payment.paidAt),
+                )
+              : new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(
+                  new Date(payment.createdAt),
+                )}
           </p>
         </div>
       </div>

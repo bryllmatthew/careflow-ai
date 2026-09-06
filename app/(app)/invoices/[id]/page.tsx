@@ -33,17 +33,25 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
   const invoice = await getInvoiceById(id);
   if (!invoice) notFound();
 
-  const [services, canUpdate, canIssue, canVoid, canApplyDiscount, canRecordManual, canProcess, canRefund] =
-    await Promise.all([
-      listServiceOptions(organizationId),
-      can("invoices.update", { organizationId, clinicId: invoice.clinicId }),
-      can("invoices.issue", { organizationId, clinicId: invoice.clinicId }),
-      can("invoices.void", { organizationId, clinicId: invoice.clinicId }),
-      can("invoices.apply_discount", { organizationId, clinicId: invoice.clinicId }),
-      can("payments.record_manual", { organizationId, clinicId: invoice.clinicId }),
-      can("payments.process", { organizationId, clinicId: invoice.clinicId }),
-      can("payments.refund", { organizationId, clinicId: invoice.clinicId }),
-    ]);
+  const [
+    services,
+    canUpdate,
+    canIssue,
+    canVoid,
+    canApplyDiscount,
+    canRecordManual,
+    canProcess,
+    canRefund,
+  ] = await Promise.all([
+    listServiceOptions(organizationId),
+    can("invoices.update", { organizationId, clinicId: invoice.clinicId }),
+    can("invoices.issue", { organizationId, clinicId: invoice.clinicId }),
+    can("invoices.void", { organizationId, clinicId: invoice.clinicId }),
+    can("invoices.apply_discount", { organizationId, clinicId: invoice.clinicId }),
+    can("payments.record_manual", { organizationId, clinicId: invoice.clinicId }),
+    can("payments.process", { organizationId, clinicId: invoice.clinicId }),
+    can("payments.refund", { organizationId, clinicId: invoice.clinicId }),
+  ]);
 
   const isDraft = invoice.status === "draft";
   const servicesForClinic = services
@@ -75,17 +83,24 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
                 <span className="text-muted-foreground">
                   Issued{" "}
                   {invoice.issueDate
-                    ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(invoice.issueDate))
+                    ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(
+                        new Date(invoice.issueDate),
+                      )
                     : "—"}
                 </span>
                 <span className="text-muted-foreground">
                   Due{" "}
                   {invoice.dueDate
-                    ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(invoice.dueDate))
+                    ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(
+                        new Date(invoice.dueDate),
+                      )
                     : "—"}
                 </span>
               </div>
-              <Link href={`/patients/${invoice.patientId}`} className="text-primary text-sm hover:underline">
+              <Link
+                href={`/patients/${invoice.patientId}`}
+                className="text-primary text-sm hover:underline"
+              >
                 View patient profile
               </Link>
             </div>
@@ -154,7 +169,11 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
           {isDraft && canUpdate && (
             <Card className="gap-3 p-5">
               <h2 className="text-sm font-medium">Details</h2>
-              <InvoiceNotesEditor invoiceId={invoice.id} dueDate={invoice.dueDate} notes={invoice.notes} />
+              <InvoiceNotesEditor
+                invoiceId={invoice.id}
+                dueDate={invoice.dueDate}
+                notes={invoice.notes}
+              />
             </Card>
           )}
 
@@ -182,16 +201,30 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
           <h2 className="mb-1 text-sm font-medium">Summary</h2>
           <SummaryRow label="Subtotal" value={invoice.subtotal} currency={invoice.currency} />
           {Number(invoice.discountAmount) > 0 && (
-            <SummaryRow label="Discount" value={`-${invoice.discountAmount}`} currency={invoice.currency} negative />
+            <SummaryRow
+              label="Discount"
+              value={`-${invoice.discountAmount}`}
+              currency={invoice.currency}
+              negative
+            />
           )}
           {Number(invoice.taxAmount) > 0 && (
-            <SummaryRow label={`Tax (${invoice.taxRate}%)`} value={invoice.taxAmount} currency={invoice.currency} />
+            <SummaryRow
+              label={`Tax (${invoice.taxRate}%)`}
+              value={invoice.taxAmount}
+              currency={invoice.currency}
+            />
           )}
           <Separator className="my-1" />
           <SummaryRow label="Total" value={invoice.total} currency={invoice.currency} emphasize />
           <SummaryRow label="Amount paid" value={invoice.amountPaid} currency={invoice.currency} />
           <Separator className="my-1" />
-          <SummaryRow label="Balance due" value={invoice.balance} currency={invoice.currency} emphasize />
+          <SummaryRow
+            label="Balance due"
+            value={invoice.balance}
+            currency={invoice.currency}
+            emphasize
+          />
         </Card>
       </div>
     </div>
@@ -214,7 +247,11 @@ function SummaryRow({
   return (
     <div className="flex items-center justify-between text-sm">
       <span className="text-muted-foreground">{label}</span>
-      <span className={emphasize ? "text-base font-semibold" : negative ? "text-destructive" : undefined}>
+      <span
+        className={
+          emphasize ? "text-base font-semibold" : negative ? "text-destructive" : undefined
+        }
+      >
         {negative ? (
           <span className="tabular-nums">
             -<Money value={value.replace("-", "")} currency={currency} />

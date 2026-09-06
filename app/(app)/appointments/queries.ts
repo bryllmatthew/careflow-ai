@@ -226,7 +226,9 @@ export async function listRemindersForAppointment(appointmentId: string): Promis
   const supabase = await getSupabaseServerClient();
   const { data } = await supabase
     .from("reminders")
-    .select("id, reminder_type, channel, scheduled_for, sent_at, status, failure_reason, retry_count")
+    .select(
+      "id, reminder_type, channel, scheduled_for, sent_at, status, failure_reason, retry_count",
+    )
     .eq("appointment_id", appointmentId)
     .order("scheduled_for");
 

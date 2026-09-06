@@ -78,10 +78,20 @@ export function CalendarNav({
         )}
 
         <div className="flex overflow-hidden rounded-lg border">
-          <Button asChild variant={view === "day" ? "secondary" : "ghost"} size="sm" className="rounded-none">
+          <Button
+            asChild
+            variant={view === "day" ? "secondary" : "ghost"}
+            size="sm"
+            className="rounded-none"
+          >
             <Link href={href({ view: "day" })}>Day</Link>
           </Button>
-          <Button asChild variant={view === "week" ? "secondary" : "ghost"} size="sm" className="rounded-none">
+          <Button
+            asChild
+            variant={view === "week" ? "secondary" : "ghost"}
+            size="sm"
+            className="rounded-none"
+          >
             <Link href={href({ view: "week" })}>Week</Link>
           </Button>
         </div>

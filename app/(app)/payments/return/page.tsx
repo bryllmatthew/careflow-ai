@@ -24,7 +24,11 @@ export default async function PaymentReturnPage({
   if (!invoiceId) {
     return (
       <div className="mx-auto max-w-md py-12">
-        <EmptyState icon={HelpCircle} title="No payment reference" description="This link is missing an invoice reference." />
+        <EmptyState
+          icon={HelpCircle}
+          title="No payment reference"
+          description="This link is missing an invoice reference."
+        />
       </div>
     );
   }

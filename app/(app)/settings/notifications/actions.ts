@@ -39,7 +39,9 @@ export async function updateReminderTemplateAction(
     ...findUnsupportedVariables(update.subject ?? ""),
   ];
   if (unsupported.length > 0) {
-    return { error: `Unsupported variable${unsupported.length > 1 ? "s" : ""}: ${unsupported.map((v) => `{{${v}}}`).join(", ")}` };
+    return {
+      error: `Unsupported variable${unsupported.length > 1 ? "s" : ""}: ${unsupported.map((v) => `{{${v}}}`).join(", ")}`,
+    };
   }
 
   const supabase = await getSupabaseServerClient();

@@ -115,21 +115,45 @@ export async function listPayments(
   if (filters.q && filters.q.trim()) {
     const q = filters.q.trim();
     const [byInvoiceNumber, matchingPatients, byRef, byProviderTxn] = await Promise.all([
-      supabase.from("invoices").select("id").eq("organization_id", organizationId).ilike("invoice_number", `%${q}%`),
-      supabase.from("patients").select("id").eq("organization_id", organizationId).ilike("search_text", `%${q.toLowerCase()}%`),
-      supabase.from("payments").select("id").eq("organization_id", organizationId).ilike("reference_number", `%${q}%`),
-      supabase.from("payments").select("id").eq("organization_id", organizationId).ilike("provider_transaction_id", `%${q}%`),
+      supabase
+        .from("invoices")
+        .select("id")
+        .eq("organization_id", organizationId)
+        .ilike("invoice_number", `%${q}%`),
+      supabase
+        .from("patients")
+        .select("id")
+        .eq("organization_id", organizationId)
+        .ilike("search_text", `%${q.toLowerCase()}%`),
+      supabase
+        .from("payments")
+        .select("id")
+        .eq("organization_id", organizationId)
+        .ilike("reference_number", `%${q}%`),
+      supabase
+        .from("payments")
+        .select("id")
+        .eq("organization_id", organizationId)
+        .ilike("provider_transaction_id", `%${q}%`),
     ]);
 
     const invoiceIds = (byInvoiceNumber.data ?? []).map((r) => r.id);
     const patientIds = (matchingPatients.data ?? []).map((r) => r.id);
     const byInvoice =
       invoiceIds.length > 0
-        ? await supabase.from("payments").select("id").eq("organization_id", organizationId).in("invoice_id", invoiceIds)
+        ? await supabase
+            .from("payments")
+            .select("id")
+            .eq("organization_id", organizationId)
+            .in("invoice_id", invoiceIds)
         : { data: [] as { id: string }[] };
     const byPatient =
       patientIds.length > 0
-        ? await supabase.from("payments").select("id").eq("organization_id", organizationId).in("patient_id", patientIds)
+        ? await supabase
+            .from("payments")
+            .select("id")
+            .eq("organization_id", organizationId)
+            .in("patient_id", patientIds)
         : { data: [] as { id: string }[] };
 
     const matchedIds = new Set([
@@ -152,7 +176,11 @@ export async function listPayments(
 
 export async function getPaymentById(paymentId: string): Promise<PaymentRow | null> {
   const supabase = await getSupabaseServerClient();
-  const { data } = await supabase.from("payments").select(PAYMENT_SELECT).eq("id", paymentId).maybeSingle();
+  const { data } = await supabase
+    .from("payments")
+    .select(PAYMENT_SELECT)
+    .eq("id", paymentId)
+    .maybeSingle();
   return data ? mapPayment(data as unknown as RawPayment) : null;
 }
 
@@ -194,7 +222,9 @@ export async function listPaymentRefunds(paymentId: string): Promise<RefundRow[]
   const supabase = await getSupabaseServerClient();
   const { data } = await supabase
     .from("refunds")
-    .select("id, payment_id, invoice_id, amount, reason, status, provider_refund_id, failure_reason, created_at, completed_at")
+    .select(
+      "id, payment_id, invoice_id, amount, reason, status, provider_refund_id, failure_reason, created_at, completed_at",
+    )
     .eq("payment_id", paymentId)
     .order("created_at", { ascending: false });
 
@@ -238,9 +268,7 @@ export async function listPatientRefunds(patientId: string): Promise<RefundRow[]
 }
 
 /** For the dashboard (docs/PRODUCT_SPEC.md Phase 6 section 38) -- DB-aggregated. */
-export async function getPaymentMetrics(
-  organizationId: string,
-): Promise<{
+export async function getPaymentMetrics(organizationId: string): Promise<{
   paymentsToday: string;
   paymentsThisMonth: string;
   succeededCount: number;

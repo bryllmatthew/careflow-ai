@@ -18,7 +18,8 @@ export type AppointmentContext = {
   startAt: string;
 };
 
-export type InvoiceTriggerType = "invoice.created" | "invoice.issued" | "invoice.overdue" | "invoice.voided";
+export type InvoiceTriggerType =
+  "invoice.created" | "invoice.issued" | "invoice.overdue" | "invoice.voided";
 
 export type InvoiceContext = {
   id: string;
@@ -232,7 +233,8 @@ export type NotificationType =
   | "no_show_followup_created"
   | "payment_succeeded"
   | "payment_failed"
-  | "payment_refunded";
+  | "payment_refunded"
+  | "inventory_consumption_failed";
 
 /**
  * Wraps public.create_notification() (migration 0014, SECURITY DEFINER) --

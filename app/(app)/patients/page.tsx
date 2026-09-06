@@ -48,7 +48,9 @@ export default async function PatientsPage({
     q: single(params.q),
     clinicId: single(params.clinic),
     status:
-      statusParam && STATUS_VALUES.includes(statusParam) ? (statusParam as PatientStatus) : undefined,
+      statusParam && STATUS_VALUES.includes(statusParam)
+        ? (statusParam as PatientStatus)
+        : undefined,
     practitionerId: single(params.practitioner),
     page: Number(single(params.page)) || 1,
   };

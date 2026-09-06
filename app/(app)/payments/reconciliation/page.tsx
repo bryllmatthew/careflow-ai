@@ -26,18 +26,25 @@ export default async function ReconciliationPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title="Reconciliation" description="Online payments stuck pending or processing for over 30 minutes." />
+      <PageHeader
+        title="Reconciliation"
+        description="Online payments stuck pending or processing for over 30 minutes."
+      />
 
       <Alert>
         <AlertDescription>
-          No online payment provider is connected in this environment, so payments can only be flagged as stale here
-          -- they cannot be automatically re-verified against a provider. Connecting a real PaymentProvider
-          implementation (lib/providers/payment) enables that.
+          No online payment provider is connected in this environment, so payments can only be
+          flagged as stale here -- they cannot be automatically re-verified against a provider.
+          Connecting a real PaymentProvider implementation (lib/providers/payment) enables that.
         </AlertDescription>
       </Alert>
 
       {stale.length === 0 ? (
-        <EmptyState icon={ClipboardCheck} title="Nothing needs review" description="No stale pending payments right now." />
+        <EmptyState
+          icon={ClipboardCheck}
+          title="Nothing needs review"
+          description="No stale pending payments right now."
+        />
       ) : (
         <Card className="gap-0 p-0">
           <PaymentsTable payments={stale} />

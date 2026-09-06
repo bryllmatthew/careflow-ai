@@ -28,7 +28,7 @@ export function Pagination({
 
   return (
     <div className="flex items-center justify-between px-1 py-2">
-      <p className="text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-sm">
         {from}–{to} of {total}
       </p>
       <div className="flex gap-2">

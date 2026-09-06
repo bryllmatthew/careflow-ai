@@ -38,7 +38,13 @@ export function InvoiceNotesEditor({
         <Label htmlFor="edit-due-date" className="text-xs">
           Due date
         </Label>
-        <Input id="edit-due-date" type="date" value={due} onChange={(e) => setDue(e.target.value)} className="w-44" />
+        <Input
+          id="edit-due-date"
+          type="date"
+          value={due}
+          onChange={(e) => setDue(e.target.value)}
+          className="w-44"
+        />
       </div>
       <div className="flex flex-col gap-1">
         <Label htmlFor="edit-notes" className="text-xs">
@@ -46,7 +52,14 @@ export function InvoiceNotesEditor({
         </Label>
         <Textarea id="edit-notes" rows={2} value={text} onChange={(e) => setText(e.target.value)} />
       </div>
-      <Button type="button" size="sm" variant="outline" disabled={pending} onClick={save} className="self-start">
+      <Button
+        type="button"
+        size="sm"
+        variant="outline"
+        disabled={pending}
+        onClick={save}
+        className="self-start"
+      >
         Save
       </Button>
     </div>

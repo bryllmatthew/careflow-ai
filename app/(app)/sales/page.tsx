@@ -21,7 +21,8 @@ export default async function SalesPage() {
   await requirePermission("sales.view", { organizationId });
 
   const metrics = await getSalesMetrics(organizationId);
-  const money = (v: string) => new Intl.NumberFormat(undefined, { style: "currency", currency: "PHP" }).format(Number(v));
+  const money = (v: string) =>
+    new Intl.NumberFormat(undefined, { style: "currency", currency: "PHP" }).format(Number(v));
 
   return (
     <div className="flex flex-col gap-6">
@@ -29,9 +30,17 @@ export default async function SalesPage() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatTile label="Sales today" value={money(metrics.salesToday)} icon={DollarSign} />
-        <StatTile label="Sales this month" value={money(metrics.salesThisMonth)} icon={DollarSign} />
+        <StatTile
+          label="Sales this month"
+          value={money(metrics.salesThisMonth)}
+          icon={DollarSign}
+        />
         <StatTile label="Outstanding" value={money(metrics.outstanding)} icon={Wallet} />
-        <StatTile label="Overdue invoices" value={String(metrics.overdueCount)} icon={AlertTriangle} />
+        <StatTile
+          label="Overdue invoices"
+          value={String(metrics.overdueCount)}
+          icon={AlertTriangle}
+        />
         <StatTile label="Voided invoices" value={String(metrics.voidedCount)} icon={Ban} />
         <StatTile label="Paid invoices" value={null} icon={Receipt} />
       </div>

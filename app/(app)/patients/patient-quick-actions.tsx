@@ -1,14 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import {
-  CalendarPlus,
-  Receipt,
-  Wallet,
-  ClipboardPlus,
-  Pencil,
-  MessageSquare,
-} from "lucide-react";
+import { CalendarPlus, Receipt, Wallet, ClipboardPlus, Pencil, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { PatientFormDialog } from "./patient-form-dialog";
@@ -18,7 +11,13 @@ import { AppointmentFormDialog } from "../appointments/appointment-form-dialog";
 import { FollowUpFormDialog } from "../followups/followup-form-dialog";
 import { NewInvoiceDialog } from "../invoices/new-invoice-dialog";
 
-type ServiceOption = { id: string; name: string; durationMinutes: number; price: string; clinicId: string };
+type ServiceOption = {
+  id: string;
+  name: string;
+  durationMinutes: number;
+  price: string;
+  clinicId: string;
+};
 
 function asFormGender(gender: string | null): PatientFormInput["gender"] {
   return (patientGenders as readonly string[]).includes(gender ?? "")
@@ -101,7 +100,9 @@ export function PatientQuickActions({
         icon={<Wallet className="size-4" />}
         label="Record Payment"
         reason={
-          canRecordPayment ? "Payments aren't built yet." : "You don't have permission to record payments."
+          canRecordPayment
+            ? "Payments aren't built yet."
+            : "You don't have permission to record payments."
         }
       />
       {canAddFollowUp ? (

@@ -26,8 +26,7 @@ async function currentOrganizationId(): Promise<string> {
 type RecordPaymentResult = { success: true; paymentId: string } | { success: false; error: string };
 type RefundResult = { success: true; refundId: string } | { success: false; error: string };
 type InitiateOnlineResult =
-  | { success: true; checkoutUrl: string }
-  | { success: false; error: string };
+  { success: true; checkoutUrl: string } | { success: false; error: string };
 
 /** Maps the Postgres error codes record_manual_payment()/record_refund() actually raise into user-facing text. */
 function friendlyRpcError(error: { code?: string; message: string }): string {
@@ -82,9 +81,13 @@ export async function recordManualPaymentAction(
     .select("clinic_id, patient_id")
     .eq("id", invoiceId)
     .maybeSingle();
-  if (!invoice) return { success: false, error: "Invoice not found, or you don't have access to it." };
+  if (!invoice)
+    return { success: false, error: "Invoice not found, or you don't have access to it." };
 
-  await requirePermission("payments.record_manual", { organizationId, clinicId: invoice.clinic_id });
+  await requirePermission("payments.record_manual", {
+    organizationId,
+    clinicId: invoice.clinic_id,
+  });
 
   const { data: paymentId, error } = await supabase.rpc("record_manual_payment", {
     p_invoice_id: invoiceId,
@@ -114,7 +117,11 @@ export async function recordManualPaymentAction(
     });
   }
 
-  const { data: refreshed } = await supabase.from("invoices").select("status").eq("id", invoiceId).maybeSingle();
+  const { data: refreshed } = await supabase
+    .from("invoices")
+    .select("status")
+    .eq("id", invoiceId)
+    .maybeSingle();
   if (refreshed?.status === "paid") {
     await resolvePaymentFollowUps(supabase, invoiceId);
   }
@@ -125,7 +132,10 @@ export async function recordManualPaymentAction(
   return { success: true, paymentId };
 }
 
-export async function refundPaymentAction(paymentId: string, input: RefundPaymentInput): Promise<RefundResult> {
+export async function refundPaymentAction(
+  paymentId: string,
+  input: RefundPaymentInput,
+): Promise<RefundResult> {
   const parsed = refundPaymentSchema.safeParse(input);
   if (!parsed.success) {
     return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid input." };
@@ -139,7 +149,8 @@ export async function refundPaymentAction(paymentId: string, input: RefundPaymen
     .select("invoice_id, clinic_id, patient_id")
     .eq("id", paymentId)
     .maybeSingle();
-  if (!payment) return { success: false, error: "Payment not found, or you don't have access to it." };
+  if (!payment)
+    return { success: false, error: "Payment not found, or you don't have access to it." };
 
   // requirePermission is defense-in-depth here -- record_refund() is
   // SECURITY DEFINER and performs its own internal authorization check
@@ -188,7 +199,9 @@ export async function refundPaymentAction(paymentId: string, input: RefundPaymen
  * checkout URL. The code path is real and will start working the moment a
  * real PaymentProvider implementation is registered.
  */
-export async function initiateOnlinePaymentAction(invoiceId: string): Promise<InitiateOnlineResult> {
+export async function initiateOnlinePaymentAction(
+  invoiceId: string,
+): Promise<InitiateOnlineResult> {
   const organizationId = await currentOrganizationId();
   const supabase = await getSupabaseServerClient();
 
@@ -197,7 +210,8 @@ export async function initiateOnlinePaymentAction(invoiceId: string): Promise<In
     .select("clinic_id, patient_id, total, amount_paid, currency, status, invoice_number")
     .eq("id", invoiceId)
     .maybeSingle();
-  if (!invoice) return { success: false, error: "Invoice not found, or you don't have access to it." };
+  if (!invoice)
+    return { success: false, error: "Invoice not found, or you don't have access to it." };
 
   await requirePermission("payments.process", { organizationId, clinicId: invoice.clinic_id });
 
@@ -257,7 +271,11 @@ export async function checkOnlinePaymentStatusAction(
   const organizationId = await currentOrganizationId();
   const supabase = await getSupabaseServerClient();
 
-  const { data: invoice } = await supabase.from("invoices").select("clinic_id").eq("id", invoiceId).maybeSingle();
+  const { data: invoice } = await supabase
+    .from("invoices")
+    .select("clinic_id")
+    .eq("id", invoiceId)
+    .maybeSingle();
   if (!invoice) return { status: "not_found" };
   await requirePermission("payments.view", { organizationId, clinicId: invoice.clinic_id });
 

@@ -77,7 +77,10 @@ export function FollowUpsFilterBar({
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         {clinics.length > 1 && (
-          <Select value={searchParams.get("clinic") ?? ALL} onValueChange={(v) => updateParams({ clinic: v })}>
+          <Select
+            value={searchParams.get("clinic") ?? ALL}
+            onValueChange={(v) => updateParams({ clinic: v })}
+          >
             <SelectTrigger className="w-full sm:w-44">
               <SelectValue placeholder="Clinic" />
             </SelectTrigger>
@@ -109,7 +112,10 @@ export function FollowUpsFilterBar({
           </SelectContent>
         </Select>
 
-        <Select value={searchParams.get("type") ?? ALL} onValueChange={(v) => updateParams({ type: v })}>
+        <Select
+          value={searchParams.get("type") ?? ALL}
+          onValueChange={(v) => updateParams({ type: v })}
+        >
           <SelectTrigger className="w-full sm:w-48">
             <SelectValue placeholder="Type" />
           </SelectTrigger>

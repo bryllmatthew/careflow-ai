@@ -50,7 +50,9 @@ export async function InvoicePaymentsCard({
         {isOpen && (
           <div className="flex flex-wrap gap-2">
             {canProcess && <OnlinePaymentButton invoiceId={invoiceId} />}
-            {canRecordManual && <RecordPaymentDialog invoiceId={invoiceId} balance={balance} currency={currency} />}
+            {canRecordManual && (
+              <RecordPaymentDialog invoiceId={invoiceId} balance={balance} currency={currency} />
+            )}
           </div>
         )}
       </div>
@@ -75,13 +77,18 @@ export async function InvoicePaymentsCard({
             <TableBody>
               {payments.map((p) => {
                 const refundable = (Number(p.amount) - Number(p.refundedAmount)).toFixed(2);
-                const canRefundThis = canRefund && p.provider === "manual" && REFUNDABLE_STATUSES.has(p.status) && Number(refundable) > 0;
+                const canRefundThis =
+                  canRefund &&
+                  p.provider === "manual" &&
+                  REFUNDABLE_STATUSES.has(p.status) &&
+                  Number(refundable) > 0;
                 return (
                   <TableRow key={p.id}>
                     <TableCell className="text-muted-foreground">
-                      {new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(
-                        new Date(p.createdAt),
-                      )}
+                      {new Intl.DateTimeFormat(undefined, {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      }).format(new Date(p.createdAt))}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {(p.paymentMethod as PaymentMethod) in paymentMethodLabels
@@ -92,7 +99,11 @@ export async function InvoicePaymentsCard({
                       <Money value={p.amount} currency={currency} />
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {Number(p.refundedAmount) > 0 ? <Money value={p.refundedAmount} currency={currency} /> : "—"}
+                      {Number(p.refundedAmount) > 0 ? (
+                        <Money value={p.refundedAmount} currency={currency} />
+                      ) : (
+                        "—"
+                      )}
                     </TableCell>
                     <TableCell>
                       <PaymentStatusBadge status={p.status} />
@@ -110,7 +121,11 @@ export async function InvoicePaymentsCard({
                           </Button>
                         )}
                         {canRefundThis && (
-                          <RefundDialog paymentId={p.id} refundableAmount={refundable} currency={currency} />
+                          <RefundDialog
+                            paymentId={p.id}
+                            refundableAmount={refundable}
+                            currency={currency}
+                          />
                         )}
                       </div>
                     </TableCell>

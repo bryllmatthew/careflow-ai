@@ -40,7 +40,9 @@ export function NewInvoiceDialog({
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [patient, setPatient] = useState<{ id: string; name: string } | null>(defaultPatient ?? null);
+  const [patient, setPatient] = useState<{ id: string; name: string } | null>(
+    defaultPatient ?? null,
+  );
   const [clinicId, setClinicId] = useState(defaultClinicId ?? clinics[0]?.id ?? "");
   const [dueDate, setDueDate] = useState("");
   const [notes, setNotes] = useState("");
@@ -125,12 +127,22 @@ export function NewInvoiceDialog({
 
             <div className="flex flex-col gap-2">
               <Label htmlFor="inv-due">Due date</Label>
-              <Input id="inv-due" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+              <Input
+                id="inv-due"
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+              />
             </div>
 
             <div className="flex flex-col gap-2">
               <Label htmlFor="inv-notes">Notes</Label>
-              <Textarea id="inv-notes" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />
+              <Textarea
+                id="inv-notes"
+                rows={2}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+              />
             </div>
           </div>
 

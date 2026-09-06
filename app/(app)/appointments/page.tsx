@@ -9,11 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { listClinicOptions, listPractitionerOptions } from "../patients/queries";
 import { listServiceOptions } from "../services/queries";
-import {
-  listAppointments,
-  APPOINTMENTS_PAGE_SIZE,
-  type AppointmentListFilters,
-} from "./queries";
+import { listAppointments, APPOINTMENTS_PAGE_SIZE, type AppointmentListFilters } from "./queries";
 import type { AppointmentStatus } from "@/lib/validation/appointment.schema";
 import { appointmentStatuses } from "@/lib/validation/appointment.schema";
 import { AppointmentsFilterBar } from "./appointments-filter-bar";
@@ -40,6 +36,11 @@ export default async function AppointmentsPage({
       statusParam && (appointmentStatuses as readonly string[]).includes(statusParam)
         ? (statusParam as AppointmentStatus)
         : undefined,
+    // Optional -- set when arriving from a dashboard/report drill-down link
+    // (section 26), so "No-Shows: 18" opens exactly the appointments that
+    // made up that number, not every no-show ever recorded.
+    startDate: single(params.from),
+    endDate: single(params.to),
     page: Number(single(params.page)) || 1,
   };
 

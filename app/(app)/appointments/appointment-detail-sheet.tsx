@@ -154,7 +154,10 @@ export function AppointmentDetailSheet({
       <SheetContent>
         <SheetHeader>
           <SheetTitle>{appointment.patientName}</SheetTitle>
-          <Link href={`/patients/${appointment.patientId}`} className="text-primary text-sm hover:underline">
+          <Link
+            href={`/patients/${appointment.patientId}`}
+            className="text-primary text-sm hover:underline"
+          >
             View patient profile
           </Link>
         </SheetHeader>
@@ -175,9 +178,10 @@ export function AppointmentDetailSheet({
             </dd>
             <dt className="text-muted-foreground">When</dt>
             <dd className="col-span-2">
-              {new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(
-                new Date(appointment.startAt),
-              )}
+              {new Intl.DateTimeFormat(undefined, {
+                dateStyle: "medium",
+                timeStyle: "short",
+              }).format(new Date(appointment.startAt))}
               {" – "}
               {new Intl.DateTimeFormat(undefined, { timeStyle: "short" }).format(
                 new Date(appointment.endAt),
@@ -199,7 +203,9 @@ export function AppointmentDetailSheet({
             <>
               <Separator />
               <div>
-                <h3 className="text-muted-foreground mb-2 text-xs font-medium uppercase">Reminders</h3>
+                <h3 className="text-muted-foreground mb-2 text-xs font-medium uppercase">
+                  Reminders
+                </h3>
                 <ul className="flex flex-col gap-1.5">
                   {reminders.map((r) => (
                     <li key={r.id} className="flex items-center gap-2 text-sm">
@@ -234,7 +240,9 @@ export function AppointmentDetailSheet({
             <>
               <Separator />
               <div>
-                <h3 className="text-muted-foreground mb-2 text-xs font-medium uppercase">Follow-Up</h3>
+                <h3 className="text-muted-foreground mb-2 text-xs font-medium uppercase">
+                  Follow-Up
+                </h3>
                 <ul className="flex flex-col gap-1.5">
                   {followUps.map((f) => (
                     <li key={f.id} className="flex items-center gap-2 text-sm">
@@ -321,7 +329,13 @@ export function AppointmentDetailSheet({
           {canUpdate && options.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {options.map((s) => (
-                <Button key={s} size="sm" variant="outline" disabled={pending} onClick={() => setStatus(s)}>
+                <Button
+                  key={s}
+                  size="sm"
+                  variant="outline"
+                  disabled={pending}
+                  onClick={() => setStatus(s)}
+                >
                   {appointmentStatusLabels[s]}
                 </Button>
               ))}

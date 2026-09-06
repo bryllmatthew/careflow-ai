@@ -27,7 +27,13 @@ import { toast } from "sonner";
 import { createAppointmentAction } from "./actions";
 import { PatientPicker } from "./patient-picker";
 
-type ServiceOption = { id: string; name: string; durationMinutes: number; price: string; clinicId: string };
+type ServiceOption = {
+  id: string;
+  name: string;
+  durationMinutes: number;
+  price: string;
+  clinicId: string;
+};
 
 function todayLocal(): string {
   const d = new Date();
@@ -75,7 +81,9 @@ export function AppointmentFormDialog({
   const open = openProp ?? openState;
   const setOpen = onOpenChangeProp ?? setOpenState;
 
-  const [patient, setPatient] = useState<{ id: string; name: string } | null>(defaultPatient ?? null);
+  const [patient, setPatient] = useState<{ id: string; name: string } | null>(
+    defaultPatient ?? null,
+  );
   const [clinicId, setClinicId] = useState(defaultClinicId ?? clinics[0]?.id ?? "");
   const [serviceId, setServiceId] = useState("");
   const [staffId, setStaffId] = useState(defaultStaffId ?? "");
@@ -213,7 +221,8 @@ export function AppointmentFormDialog({
               </Select>
               {selectedService && (
                 <p className="text-muted-foreground text-sm">
-                  <Money value={selectedService.price} /> · {selectedService.durationMinutes} minutes
+                  <Money value={selectedService.price} /> · {selectedService.durationMinutes}{" "}
+                  minutes
                 </p>
               )}
               {servicesForClinic.length === 0 && (
@@ -264,7 +273,12 @@ export function AppointmentFormDialog({
 
             <div className="flex flex-col gap-2">
               <Label htmlFor="appt-notes">Notes</Label>
-              <Textarea id="appt-notes" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />
+              <Textarea
+                id="appt-notes"
+                rows={2}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+              />
             </div>
           </div>
 

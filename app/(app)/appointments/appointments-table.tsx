@@ -45,15 +45,12 @@ export function AppointmentsTable({
         </TableHeader>
         <TableBody>
           {appointments.map((a) => (
-            <TableRow
-              key={a.id}
-              className="cursor-pointer"
-              onClick={() => setSelected(a)}
-            >
+            <TableRow key={a.id} className="cursor-pointer" onClick={() => setSelected(a)}>
               <TableCell className="font-medium">
-                {new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(
-                  new Date(a.startAt),
-                )}
+                {new Intl.DateTimeFormat(undefined, {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                }).format(new Date(a.startAt))}
               </TableCell>
               <TableCell>{a.patientName}</TableCell>
               <TableCell className="text-muted-foreground">{a.serviceName ?? "—"}</TableCell>
