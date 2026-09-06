@@ -22,6 +22,7 @@
     "test:rls": "supabase test db --local"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.123.0",
     "@supabase/ssr": "^0.12.5",
     "@supabase/supabase-js": "^2.113.0",
     "class-variance-authority": "^0.7.1",

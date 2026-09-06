@@ -126,9 +126,10 @@ Recorded so the code and docs stop contradicting each other:
   percentage, defaulting to 0 — `docs/CLAUDE.md`'s "Known open questions" already flags the
   compliance/tax regime (PH VAT vs. HIPAA-adjacent assumptions) as unresolved; a config table would
   encode a policy nobody has specified yet.
-- **No product line items on invoices.** No products/inventory table exists until Phase 7 —
-  `invoice_items.service_id` is the only structured source column; a `product_id` nobody could
-  populate would be dead weight, not a real feature.
+- **No product line items on invoices, even though `products`/`inventory` now exist (Phase 7).**
+  `invoice_items.service_id` is still the only structured source column. Phase 7's own prompt
+  explicitly allows leaving this integration point clean rather than retrofitting unsupported retail
+  sales-through-invoice behavior; see `docs/modules/INVENTORY.md` §"Sales integration."
 - **No `rooms` or `staff_availability` table yet**, despite both being named in the original Phase 1
   plan's table inventory. Double-booking prevention (the hard safety requirement) is enforced by
   `appointments`' `EXCLUDE` constraint on `(staff_id, time_range)`, which does not depend on either —
@@ -145,6 +146,95 @@ Recorded so the code and docs stop contradicting each other:
   `domain_events`, `document_counters` and `ai_tool_calls` are added** — each is required by a spec
   elsewhere but defined nowhere.
 - **Next.js 16** (plan said 15; 16 was stable by build time).
+- **Phase 7's inventory permission set uses the coarse grain migration 0002 already seeded**
+  (`inventory.view`/`inventory.manage`, `products.manage`, `suppliers.view`/`.manage`,
+  `purchase_orders.view`/`.manage`, `reports.inventory`) rather than inventing the Phase 7 prompt's
+  finer-grained suggestions (`inventory.adjust`/`.receive`/`.transfer`, `purchase_orders.submit`, etc).
+  Those permissions were already granted to owner/admin/clinic_manager/inventory_manager and
+  human-reviewed in migration 0002; splitting them further now would mean re-reviewing every role's
+  grants for a distinction the UI doesn't otherwise need. See `docs/modules/INVENTORY.md`.
+- **`products.category` is free text, not a `product_categories` table.** Organizations type whatever
+  they want (with suggested values in the UI); nothing forces a curated list and there is no
+  category CRUD to build or maintain. Section 5 explicitly permits this.
+- **A product has one preferred supplier (`products.supplier_id`), not a many-to-many
+  `product_suppliers` join** — matches `docs/DATABASE_SCHEMA.md`'s own product field list and section
+  22's "do not over-engineer procurement."
+- **`purchase_orders.status` collapses Draft/Submitted/Ordered into `draft` → `ordered` →
+  `partially_received`/`received` (or `cancelled`).** There is no internal-approval workflow being
+  built between "submitted" and "ordered," and section 23 itself says "do not add unnecessary
+  procurement workflows."
+- **Batch/lot tracking is receiving-only, not FEFO-allocated on consumption.** `inventory_batches`
+  rows are created when track_expiration stock is received (manually or via PO) for traceability and
+  expiration reporting, but `consume_inventory_for_appointment()` decrements only the aggregate
+  `inventory.quantity_on_hand` — it does not pick a specific batch by earliest-expiration. Manual
+  batch-specific write-offs remain possible via `adjust_inventory()`'s optional `p_batch_id`. Section
+  14 explicitly rules out "a highly complex pharmaceutical inventory system."
+- **No proactive "expiring soon"/"just expired" cron notification.** Expiration status is fully
+  live-visible in every inventory list/detail view (section 15's actual requirement — "must remain
+  clearly visible," never "must be pushed"), but there is no scheduled job pushing an
+  `inventory.expired` notification the way `payment.succeeded` pushes one. Built in Phase 8 alongside
+  the rest of the reporting work rather than before it — see `docs/modules/REPORTING.md`.
+- **Phase 8 (dashboards/reporting) adds ZERO new tables, views, or RPCs.** Every KPI is computed by
+  reading the existing transactional tables through the normal RLS-respecting client — aggregation
+  security (section 37/38: "All Clinics" must never include an unauthorized clinic) is a property of
+  the _existing_ per-table RLS `SELECT` policies, not a new mechanism, since Postgres filters rows out
+  before any `SUM`/`COUNT` ever sees them. Proven directly by `supabase/tests/reporting_test.sql`
+  rather than assumed. See `docs/modules/REPORTING.md`.
+- **No `date-fns`/`date-fns-tz` dependency.** `lib/reporting/timezone.ts` is a small,
+  zero-dependency `Intl.DateTimeFormat`-based module instead — the only two primitives a reporting
+  date boundary needs (zoned-time→UTC, and the reverse) don't justify a new dependency, and this keeps
+  every conversion auditable in ~60 lines. Verified directly against known-correct UTC conversions
+  for `Asia/Manila` and a DST-observing zone (`America/New_York`), not just by inspection.
+- **Clinic/service/practitioner performance tables are aggregated in application code, not a new SQL
+  view or RPC.** PostgREST's standard query builder has no `GROUP BY`; at this MVP's row counts,
+  fetching the (already RLS-filtered) rows for the selected range and reducing them in JS is correct
+  and simple, matching section 40's "make it correct first, optimize measured bottlenecks" — not a
+  premature-optimization shortcut.
+- **No new report permissions.** `reports.view`, `reports.financial`, and `reports.inventory`
+  (seeded in migration 0002, Phase 1) already gate exactly the three report surfaces Phase 8 builds.
+  CSV export reuses the same permission as the report it exports, rather than a separate
+  `reports.export` permission nobody asked a role to hold independently.
+- **Weeks start Monday** (ISO 8601) for every "This Week"/"Last Week" date-range preset — not
+  specified anywhere in the spec set; this is the one place that decision is recorded.
+- **Date-range boundaries use the organization's timezone only** — `clinics.timezone` is not
+  consulted for report/dashboard boundaries. A single organization operating across multiple
+  timezones is not this platform's target usage (Davao/Cebu/Manila share one timezone), and using one
+  canonical timezone avoids the reporting window shifting depending on which clinic filter is
+  selected.
+- **Service revenue is invoiced value, not collected revenue**, and **practitioner-attributed
+  revenue only counts invoices explicitly linked to one of that practitioner's appointments**
+  (`invoices.appointment_id`) — never a guessed split of unattributed revenue. Both are documented
+  formulas in `docs/modules/REPORTING.md`, following section 15/16's explicit caution against
+  fabricating an attribution the data model doesn't support.
+- **CSV export only, no PDF.** No PDF-generation dependency exists anywhere in the project; section
+  33 makes PDF conditional on "where the existing architecture makes it practical," which it doesn't.
+- **`/patients` and `/invoices` list pages do not yet accept a drill-down date range** (`/appointments`
+  was extended to, since it's the highest-value case — Workflow 4). Clicking through from a KPI still
+  lands on the correct clinic/status-filtered subset; it just isn't clipped to the exact date window
+  yet. See `docs/modules/REPORTING.md` "Deferred."
+- **AI tool schemas never accept `organization_id`, even though `AI_TOOLS.md` §6 lists it as a
+  possible `get_dashboard_summary` input.** Every tool resolves the organization from the session
+  (`lib/ai/context.ts`), never from model or client input — the same rule (§4 above) applied to the
+  one place the original spec set contradicted it. See `docs/modules/AI_ASSISTANT.md`.
+- **AI conversations are private to the user who started them**, not shared across the organization
+  the way business tables are. An operational assistant's chat transcript isn't team-shared data by
+  default; nothing in the spec set says otherwise, and every other precedent (audit logs, notification
+  read state) in this app is per-user where it plausibly could go either way.
+- **AI action tools reuse the exact existing Server Action a human would call** (`createAppointmentAction`,
+  `recordManualPaymentAction`, etc.) behind a propose → confirm → execute flow, rather than a new RPC
+  or write path — `AI_TOOLS.md` §16 lists the action names but not an implementation strategy; §66 of
+  the Phase 9 brief is explicit that the AI should be "a new interface to CareFlow, not a parallel
+  implementation of CareFlow."
+- **`send_reminder` (AI action tool) does not call a messaging provider directly.** No such
+  user-triggerable send path exists anywhere in the app — patient-facing reminders are only ever sent
+  by the service-role `app/api/cron/process-reminders` job on their `scheduled_for` time, and rule 1
+  above forbids adding a second service-role-touching request path. The tool instead moves the target
+  reminder's `scheduled_for` to now, so the existing cron job sends it on its next run.
+- **No token-level streaming to the browser for the AI chat.** `AIProvider.generateReply()` is
+  non-streaming; each turn's tool loop runs to completion before a response is returned. Assistant
+  replies are short operational answers, not long-form generation, so this is `CLAUDE.md`'s own
+  "implement the smallest complete version" principle, not an oversight — see
+  `docs/modules/AI_ASSISTANT.md` "Deferred."
 
 ## Known open questions
 
@@ -157,5 +247,7 @@ Not blockers for Phase 1, but they must be answered before the phase noted:
   billing/subscription". Needed before launch.
 - **Six of seven role→permission matrices are unwritten** — only Receptionist is specified
   (`AUTHORIZATION.md` §5). Authored in migration 0002; requires human review.
-- **`get_patient` per-role field projection** (`AI_TOOLS.md` §10) and the **tool→permission mapping**
-  for all 17 AI tools are unspecified. Needed for Phase 9.
+- ~~**`get_patient` per-role field projection** (`AI_TOOLS.md` §10) and the **tool→permission mapping**
+  for all 17 AI tools are unspecified. Needed for Phase 9.~~ Resolved in Phase 9: field inclusion is
+  keyed to which permission the caller holds (`appointments.view`/`followups.view`/`reports.financial`),
+  and every tool's permission mapping is recorded in `docs/modules/AI_ASSISTANT.md`.

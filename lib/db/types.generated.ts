@@ -34,6 +34,207 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_conversations: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          id: string
+          organization_id: string
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          organization_id: string
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          organization_id?: string
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_conversations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_messages: {
+        Row: {
+          content: Json
+          conversation_id: string
+          created_at: string
+          id: string
+          organization_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          content: Json
+          conversation_id: string
+          created_at?: string
+          id?: string
+          organization_id: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          content?: Json
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          organization_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "ai_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_messages_conversation_org_fk"
+            columns: ["conversation_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "ai_conversations"
+            referencedColumns: ["id", "organization_id"]
+          },
+        ]
+      }
+      ai_tool_calls: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          error_message: string | null
+          id: string
+          input: Json
+          is_action: boolean
+          message_id: string | null
+          organization_id: string
+          output_summary: Json | null
+          status: string
+          tool_name: string
+          tool_use_id: string
+          user_id: string
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          input?: Json
+          is_action?: boolean
+          message_id?: string | null
+          organization_id: string
+          output_summary?: Json | null
+          status: string
+          tool_name: string
+          tool_use_id: string
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          input?: Json
+          is_action?: boolean
+          message_id?: string | null
+          organization_id?: string
+          output_summary?: Json | null
+          status?: string
+          tool_name?: string
+          tool_use_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_tool_calls_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "ai_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_tool_calls_conversation_org_fk"
+            columns: ["conversation_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "ai_conversations"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "ai_tool_calls_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "ai_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_usage: {
+        Row: {
+          conversation_id: string | null
+          created_at: string
+          id: string
+          input_tokens: number
+          model: string
+          organization_id: string
+          output_tokens: number
+          user_id: string
+        }
+        Insert: {
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          input_tokens?: number
+          model: string
+          organization_id: string
+          output_tokens?: number
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          input_tokens?: number
+          model?: string
+          organization_id?: string
+          output_tokens?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_usage_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "ai_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_usage_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointments: {
         Row: {
           clinic_id: string
@@ -408,6 +609,235 @@ export type Database = {
             columns: ["patient_id", "organization_id"]
             isOneToOne: false
             referencedRelation: "patients"
+            referencedColumns: ["id", "organization_id"]
+          },
+        ]
+      }
+      inventory: {
+        Row: {
+          clinic_id: string
+          created_at: string
+          id: string
+          is_low_stock: boolean | null
+          last_received_at: string | null
+          last_used_at: string | null
+          organization_id: string
+          product_id: string
+          quantity_on_hand: number
+          reorder_level: number
+          reorder_quantity: number
+          updated_at: string
+        }
+        Insert: {
+          clinic_id: string
+          created_at?: string
+          id?: string
+          is_low_stock?: boolean | null
+          last_received_at?: string | null
+          last_used_at?: string | null
+          organization_id: string
+          product_id: string
+          quantity_on_hand?: number
+          reorder_level?: number
+          reorder_quantity?: number
+          updated_at?: string
+        }
+        Update: {
+          clinic_id?: string
+          created_at?: string
+          id?: string
+          is_low_stock?: boolean | null
+          last_received_at?: string | null
+          last_used_at?: string | null
+          organization_id?: string
+          product_id?: string
+          quantity_on_hand?: number
+          reorder_level?: number
+          reorder_quantity?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_clinic_fk"
+            columns: ["clinic_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "inventory_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_product_fk"
+            columns: ["product_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id", "organization_id"]
+          },
+        ]
+      }
+      inventory_batches: {
+        Row: {
+          batch_number: string | null
+          clinic_id: string
+          created_at: string
+          expiration_date: string | null
+          id: string
+          lot_number: string | null
+          organization_id: string
+          product_id: string
+          quantity_remaining: number
+          received_at: string
+          unit_cost: number | null
+          updated_at: string
+        }
+        Insert: {
+          batch_number?: string | null
+          clinic_id: string
+          created_at?: string
+          expiration_date?: string | null
+          id?: string
+          lot_number?: string | null
+          organization_id: string
+          product_id: string
+          quantity_remaining?: number
+          received_at?: string
+          unit_cost?: number | null
+          updated_at?: string
+        }
+        Update: {
+          batch_number?: string | null
+          clinic_id?: string
+          created_at?: string
+          expiration_date?: string | null
+          id?: string
+          lot_number?: string | null
+          organization_id?: string
+          product_id?: string
+          quantity_remaining?: number
+          received_at?: string
+          unit_cost?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_batches_clinic_fk"
+            columns: ["clinic_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "inventory_batches_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_batches_product_fk"
+            columns: ["product_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id", "organization_id"]
+          },
+        ]
+      }
+      inventory_movements: {
+        Row: {
+          batch_number: string | null
+          clinic_id: string
+          created_at: string
+          created_by: string | null
+          expiration_date: string | null
+          id: string
+          lot_number: string | null
+          movement_type: string
+          notes: string | null
+          organization_id: string
+          product_id: string
+          quantity: number
+          quantity_after: number
+          quantity_before: number
+          reference_id: string | null
+          reference_type: string | null
+          total_cost: number | null
+          transfer_group_id: string | null
+          unit_cost: number | null
+        }
+        Insert: {
+          batch_number?: string | null
+          clinic_id: string
+          created_at?: string
+          created_by?: string | null
+          expiration_date?: string | null
+          id?: string
+          lot_number?: string | null
+          movement_type: string
+          notes?: string | null
+          organization_id: string
+          product_id: string
+          quantity: number
+          quantity_after: number
+          quantity_before: number
+          reference_id?: string | null
+          reference_type?: string | null
+          total_cost?: number | null
+          transfer_group_id?: string | null
+          unit_cost?: number | null
+        }
+        Update: {
+          batch_number?: string | null
+          clinic_id?: string
+          created_at?: string
+          created_by?: string | null
+          expiration_date?: string | null
+          id?: string
+          lot_number?: string | null
+          movement_type?: string
+          notes?: string | null
+          organization_id?: string
+          product_id?: string
+          quantity?: number
+          quantity_after?: number
+          quantity_before?: number
+          reference_id?: string | null
+          reference_type?: string | null
+          total_cost?: number | null
+          transfer_group_id?: string | null
+          unit_cost?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_movements_clinic_fk"
+            columns: ["clinic_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "inventory_movements_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_movements_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_movements_product_fk"
+            columns: ["product_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "products"
             referencedColumns: ["id", "organization_id"]
           },
         ]
@@ -946,6 +1376,93 @@ export type Database = {
         }
         Relationships: []
       }
+      products: {
+        Row: {
+          barcode: string | null
+          brand: string | null
+          category: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          name: string
+          organization_id: string
+          reorder_level: number
+          reorder_quantity: number
+          selling_price: number | null
+          sku: string | null
+          status: string
+          supplier_id: string | null
+          supplier_sku: string | null
+          track_expiration: boolean
+          track_inventory: boolean
+          unit_cost: number
+          unit_of_measure: string
+          updated_at: string
+        }
+        Insert: {
+          barcode?: string | null
+          brand?: string | null
+          category?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          reorder_level?: number
+          reorder_quantity?: number
+          selling_price?: number | null
+          sku?: string | null
+          status?: string
+          supplier_id?: string | null
+          supplier_sku?: string | null
+          track_expiration?: boolean
+          track_inventory?: boolean
+          unit_cost?: number
+          unit_of_measure?: string
+          updated_at?: string
+        }
+        Update: {
+          barcode?: string | null
+          brand?: string | null
+          category?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          reorder_level?: number
+          reorder_quantity?: number
+          selling_price?: number | null
+          sku?: string | null
+          status?: string
+          supplier_id?: string | null
+          supplier_sku?: string | null
+          track_expiration?: boolean
+          track_inventory?: boolean
+          unit_cost?: number
+          unit_of_measure?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_supplier_fk"
+            columns: ["supplier_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id", "organization_id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -975,6 +1492,156 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      purchase_order_items: {
+        Row: {
+          clinic_id: string
+          created_at: string
+          description: string
+          id: string
+          organization_id: string
+          product_id: string
+          purchase_order_id: string
+          quantity_ordered: number
+          quantity_received: number
+          total_cost: number | null
+          unit_cost: number
+        }
+        Insert: {
+          clinic_id: string
+          created_at?: string
+          description: string
+          id?: string
+          organization_id: string
+          product_id: string
+          purchase_order_id: string
+          quantity_ordered: number
+          quantity_received?: number
+          total_cost?: number | null
+          unit_cost: number
+        }
+        Update: {
+          clinic_id?: string
+          created_at?: string
+          description?: string
+          id?: string
+          organization_id?: string
+          product_id?: string
+          purchase_order_id?: string
+          quantity_ordered?: number
+          quantity_received?: number
+          total_cost?: number | null
+          unit_cost?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_order_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_order_items_po_fk"
+            columns: ["purchase_order_id", "organization_id", "clinic_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["id", "organization_id", "clinic_id"]
+          },
+          {
+            foreignKeyName: "purchase_order_items_product_fk"
+            columns: ["product_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id", "organization_id"]
+          },
+        ]
+      }
+      purchase_orders: {
+        Row: {
+          clinic_id: string
+          created_at: string
+          created_by: string | null
+          expected_date: string | null
+          id: string
+          notes: string | null
+          order_date: string | null
+          organization_id: string
+          purchase_order_number: string | null
+          status: string
+          subtotal: number
+          supplier_id: string
+          tax_amount: number
+          tax_rate: number
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          clinic_id: string
+          created_at?: string
+          created_by?: string | null
+          expected_date?: string | null
+          id?: string
+          notes?: string | null
+          order_date?: string | null
+          organization_id: string
+          purchase_order_number?: string | null
+          status?: string
+          subtotal?: number
+          supplier_id: string
+          tax_amount?: number
+          tax_rate?: number
+          total?: number
+          updated_at?: string
+        }
+        Update: {
+          clinic_id?: string
+          created_at?: string
+          created_by?: string | null
+          expected_date?: string | null
+          id?: string
+          notes?: string | null
+          order_date?: string | null
+          organization_id?: string
+          purchase_order_number?: string | null
+          status?: string
+          subtotal?: number
+          supplier_id?: string
+          tax_amount?: number
+          tax_rate?: number
+          total?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_orders_clinic_fk"
+            columns: ["clinic_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_supplier_fk"
+            columns: ["supplier_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id", "organization_id"]
+          },
+        ]
       }
       refunds: {
         Row: {
@@ -1265,6 +1932,58 @@ export type Database = {
           },
         ]
       }
+      service_products: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          organization_id: string
+          product_id: string
+          quantity: number
+          service_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          organization_id: string
+          product_id: string
+          quantity: number
+          service_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          organization_id?: string
+          product_id?: string
+          quantity?: number
+          service_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_products_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_products_product_fk"
+            columns: ["product_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "service_products_service_fk"
+            columns: ["service_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id", "organization_id"]
+          },
+        ]
+      }
       services: {
         Row: {
           clinic_id: string
@@ -1318,6 +2037,56 @@ export type Database = {
           },
           {
             foreignKeyName: "services_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      suppliers: {
+        Row: {
+          address: string | null
+          contact_person: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          organization_id: string
+          phone: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          contact_person?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          organization_id: string
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          contact_person?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          organization_id?: string
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "suppliers_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -1431,6 +2200,28 @@ export type Database = {
     }
     Functions: {
       accept_invite: { Args: { p_organization_id: string }; Returns: undefined }
+      adjust_inventory: {
+        Args: {
+          p_batch_id?: string
+          p_clinic_id: string
+          p_movement_type: string
+          p_product_id: string
+          p_quantity_delta: number
+          p_reason: string
+        }
+        Returns: string
+      }
+      consume_inventory_for_appointment: {
+        Args: { p_appointment_id: string }
+        Returns: {
+          out_product_id: string
+          out_product_name: string
+          out_quantity_after: number
+          out_quantity_before: number
+          out_quantity_used: number
+          out_reorder_level: number
+        }[]
+      }
       create_notification: {
         Args: {
           p_entity_id?: string
@@ -1497,6 +2288,30 @@ export type Database = {
         }
         Returns: string
       }
+      receive_purchase_order_item: {
+        Args: {
+          p_batch_number?: string
+          p_expiration_date?: string
+          p_item_id: string
+          p_lot_number?: string
+          p_notes?: string
+          p_quantity: number
+        }
+        Returns: string
+      }
+      receive_stock: {
+        Args: {
+          p_batch_number?: string
+          p_clinic_id: string
+          p_expiration_date?: string
+          p_lot_number?: string
+          p_notes?: string
+          p_product_id: string
+          p_quantity: number
+          p_unit_cost?: number
+        }
+        Returns: string
+      }
       record_manual_payment: {
         Args: {
           p_amount: number
@@ -1514,6 +2329,16 @@ export type Database = {
       set_membership_status: {
         Args: { p_membership_id: string; p_status: string }
         Returns: undefined
+      }
+      transfer_inventory: {
+        Args: {
+          p_from_clinic_id: string
+          p_notes?: string
+          p_product_id: string
+          p_quantity: number
+          p_to_clinic_id: string
+        }
+        Returns: string
       }
     }
     Enums: {
