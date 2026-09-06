@@ -96,7 +96,7 @@ alter table public.patients add column search_text text
     public.patient_search_text(first_name, last_name, phone, email, id)
   ) stored;
 
-create index patients_search_trgm_ix on public.patients using gin (search_text gin_trgm_ops);
+create index patients_search_trgm_ix on public.patients using gin (search_text extensions.gin_trgm_ops);
 
 -- ----------------------------------------------------------------------------
 -- Row Level Security
