@@ -235,6 +235,12 @@ Recorded so the code and docs stop contradicting each other:
   replies are short operational answers, not long-form generation, so this is `CLAUDE.md`'s own
   "implement the smallest complete version" principle, not an oversight — see
   `docs/modules/AI_ASSISTANT.md` "Deferred."
+- **`vercel.json`'s cron schedules run once daily, not every 15 minutes / hourly**, on the deployed
+  Vercel Hobby (free) plan, which caps cron frequency at once per day — a platform constraint, not a
+  design choice. This means `reminder_24h`/`reminder_2h` reminders and overdue-invoice detection are
+  checked once a day rather than near-real-time, so a reminder's actual send time can lag its
+  `scheduled_for` by up to ~24h. Tighten `vercel.json` back to the original cadence
+  (`*/15 * * * *` / `0 * * * *`) if/when the Vercel plan is upgraded.
 
 ## Known open questions
 
