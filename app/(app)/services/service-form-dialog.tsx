@@ -88,7 +88,9 @@ export function ServiceFormDialog({
           <DialogHeader>
             <DialogTitle>{isEdit ? "Edit service" : "Add service"}</DialogTitle>
             <DialogDescription>
-              {isEdit ? "Update this service's details." : "Add a bookable service to the catalogue."}
+              {isEdit
+                ? "Update this service's details."
+                : "Add a bookable service to the catalogue."}
             </DialogDescription>
           </DialogHeader>
 

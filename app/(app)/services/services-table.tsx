@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { MoreHorizontal, Pencil, Archive, ArchiveRestore, Trash2 } from "lucide-react";
+import { MoreHorizontal, Pencil, Archive, ArchiveRestore, Trash2, Boxes } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -22,16 +22,20 @@ import { ConfirmDialog } from "@/components/patterns/confirm-dialog";
 import { Money } from "@/components/patterns/money";
 import { toast } from "sonner";
 import type { ServiceRow } from "./queries";
+import type { ProductOption } from "../products/queries";
 import { setServiceStatusAction, deleteServiceAction } from "./actions";
 import { ServiceFormDialog } from "./service-form-dialog";
+import { ServiceSuppliesDialog } from "./service-supplies-dialog";
 
 export function ServicesTable({
   services,
   clinics,
+  products,
   canManage,
 }: {
   services: ServiceRow[];
   clinics: { id: string; name: string }[];
+  products: ProductOption[];
   canManage: boolean;
 }) {
   const [pending, startTransition] = useTransition();
@@ -100,6 +104,17 @@ export function ServicesTable({
                         </DropdownMenuItem>
                       }
                     />
+                    <ServiceSuppliesDialog
+                      serviceId={s.id}
+                      serviceName={s.name}
+                      products={products}
+                      trigger={
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                          <Boxes className="size-4" />
+                          Required supplies
+                        </DropdownMenuItem>
+                      }
+                    />
                     <DropdownMenuItem disabled={pending} onSelect={() => toggleStatus(s)}>
                       {s.status === "active" ? (
                         <>
@@ -115,7 +130,10 @@ export function ServicesTable({
                     </DropdownMenuItem>
                     <ConfirmDialog
                       trigger={
-                        <DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()}>
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onSelect={(e) => e.preventDefault()}
+                        >
                           <Trash2 className="size-4" />
                           Delete
                         </DropdownMenuItem>

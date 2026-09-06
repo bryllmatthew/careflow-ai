@@ -6,6 +6,7 @@ import { getAuthContext } from "@/lib/auth/session";
 import { requirePermission } from "@/lib/auth/require-permission";
 import { NotFoundError, UnauthenticatedError } from "@/lib/auth/errors";
 import { serviceFormSchema, type ServiceFormInput } from "@/lib/validation/service.schema";
+import { listServiceSupplies, type ServiceSupplyRow } from "./queries";
 
 async function currentOrganizationId(): Promise<string> {
   const auth = await getAuthContext();
@@ -121,6 +122,94 @@ export async function deleteServiceAction(serviceId: string) {
 
   if (error) throw new Error(error.message);
   if (!data) throw new NotFoundError("Service not found.");
+
+  revalidatePath("/services");
+}
+
+type ActionResult = { error: string } | { error?: undefined };
+
+/** Client components can't import queries.ts (server-only) directly -- this wraps it for the supplies dialog. */
+export async function listServiceSuppliesAction(serviceId: string): Promise<ServiceSupplyRow[]> {
+  return listServiceSupplies(serviceId);
+}
+
+/**
+ * "Service -> Required Supplies" (section 11). RLS resolves the clinic scope
+ * through service_products' own policy (a join back to services), so no
+ * extra requirePermission() call is needed here -- the same shape as
+ * invoice_items' insert/update/delete actions.
+ */
+export async function addServiceSupplyAction(
+  serviceId: string,
+  productId: string,
+  quantity: string,
+  notes?: string,
+): Promise<ActionResult> {
+  const qty = Number(quantity);
+  if (!Number.isFinite(qty) || qty <= 0) {
+    return { error: "Enter a quantity greater than 0." };
+  }
+
+  const organizationId = await currentOrganizationId();
+  const supabase = await getSupabaseServerClient();
+  const { error } = await supabase.from("service_products").insert({
+    organization_id: organizationId,
+    service_id: serviceId,
+    product_id: productId,
+    quantity: qty,
+    notes: notes || null,
+  });
+
+  if (error) {
+    return {
+      error:
+        error.code === "23505"
+          ? "This product is already required by this service."
+          : error.message,
+    };
+  }
+
+  revalidatePath("/services");
+  return {};
+}
+
+export async function updateServiceSupplyAction(
+  supplyId: string,
+  quantity: string,
+  notes?: string,
+): Promise<ActionResult> {
+  const qty = Number(quantity);
+  if (!Number.isFinite(qty) || qty <= 0) {
+    return { error: "Enter a quantity greater than 0." };
+  }
+
+  const supabase = await getSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("service_products")
+    .update({ quantity: qty, notes: notes || null })
+    .eq("id", supplyId)
+    .select("id")
+    .maybeSingle();
+
+  if (error) return { error: error.message };
+  if (!data) return { error: "Supply requirement not found, or you don't have access to it." };
+
+  revalidatePath("/services");
+  return {};
+}
+
+export async function removeServiceSupplyAction(supplyId: string): Promise<void> {
+  const supabase = await getSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("service_products")
+    .delete()
+    .eq("id", supplyId)
+    .select("id")
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  if (!data)
+    throw new NotFoundError("Supply requirement not found, or you don't have access to it.");
 
   revalidatePath("/services");
 }

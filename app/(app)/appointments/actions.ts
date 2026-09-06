@@ -45,7 +45,10 @@ async function safeDispatch(
   try {
     await dispatchAppointmentEvent(supabase, trigger, appointment);
   } catch (err) {
-    console.error(`[automation] dispatch failed for ${trigger} on appointment ${appointment.id}:`, err);
+    console.error(
+      `[automation] dispatch failed for ${trigger} on appointment ${appointment.id}:`,
+      err,
+    );
   }
 }
 
@@ -192,6 +195,51 @@ export async function rescheduleAppointmentAction(
   return {};
 }
 
+/** Postgres unique_violation -- the idempotency mechanism for consume_inventory_for_appointment, not an error to surface (see the migration's inventory_movements_appointment_product_uk index). */
+const UNIQUE_VIOLATION = "23505";
+/** Postgres check_violation -- record_manual_payment-style validation errors, here specifically "insufficient stock." */
+const CHECK_VIOLATION = "23514";
+
+/**
+ * Service -> Required Supplies -> Inventory Deduction (section 12), run once
+ * an appointment is actually completed. Never fails the status change
+ * itself -- the appointment already happened clinically; a supply shortfall
+ * is a real operational problem, so (unlike a reminder/follow-up dispatch
+ * failure) it's surfaced to the staff member via a notification rather than
+ * only logged, but it still never blocks or reverts the completion.
+ */
+async function safeConsumeInventory(
+  supabase: Awaited<ReturnType<typeof getSupabaseServerClient>>,
+  appointmentId: string,
+  organizationId: string,
+  staffId: string,
+) {
+  const { error } = await supabase.rpc("consume_inventory_for_appointment", {
+    p_appointment_id: appointmentId,
+  });
+
+  if (!error || error.code === UNIQUE_VIOLATION) {
+    return;
+  }
+
+  console.error(
+    `[inventory] consume_inventory_for_appointment failed for appointment ${appointmentId}:`,
+    error,
+  );
+
+  if (error.code === CHECK_VIOLATION) {
+    await notifyUser(supabase, {
+      organizationId,
+      userId: staffId,
+      type: "inventory_consumption_failed",
+      title: "Supplies not deducted",
+      message: `This appointment's required supplies couldn't be fully deducted: ${error.message}`,
+      entityType: "appointment",
+      entityId: appointmentId,
+    });
+  }
+}
+
 const STATUS_TRIGGERS: Partial<Record<AppointmentStatus, AppointmentTriggerType>> = {
   confirmed: "appointment.confirmed",
   completed: "appointment.completed",
@@ -242,6 +290,10 @@ export async function updateAppointmentStatusAction(
     });
   }
 
+  if (status === "completed") {
+    await safeConsumeInventory(supabase, data.id, organizationId, data.staff_id);
+  }
+
   revalidatePath("/calendar");
   revalidatePath("/appointments");
 }
@@ -265,7 +317,9 @@ export async function cancelAppointmentAction(appointmentId: string) {
   // (docs/PRODUCT_SPEC.md Phase 4 section 19) -- already-sent ones stay put.
   await cancelScheduledReminders(supabase, appointmentId);
 
-  const patientName = data.patients ? `${data.patients.first_name} ${data.patients.last_name}` : "A patient";
+  const patientName = data.patients
+    ? `${data.patients.first_name} ${data.patients.last_name}`
+    : "A patient";
   await notifyUser(supabase, {
     organizationId,
     userId: data.staff_id,

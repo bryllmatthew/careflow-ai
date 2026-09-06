@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { listServices } from "./queries";
 import { listClinicOptions } from "../patients/queries";
+import { listProductOptions } from "../products/queries";
 import { ServiceFormDialog } from "./service-form-dialog";
 import { ServicesTable } from "./services-table";
 
@@ -17,9 +18,10 @@ export default async function ServicesPage() {
 
   await requirePermission("services.view", { organizationId });
 
-  const [services, clinics, canManage] = await Promise.all([
+  const [services, clinics, products, canManage] = await Promise.all([
     listServices(organizationId, { includeInactive: true }),
     listClinicOptions(organizationId),
+    listProductOptions(organizationId),
     can("services.manage", { organizationId }),
   ]);
 
@@ -64,7 +66,12 @@ export default async function ServicesPage() {
         />
       ) : (
         <Card className="p-0">
-          <ServicesTable services={services} clinics={clinics} canManage={canManage} />
+          <ServicesTable
+            services={services}
+            clinics={clinics}
+            products={products}
+            canManage={canManage}
+          />
         </Card>
       )}
     </div>

@@ -20,7 +20,9 @@ export async function listServices(
   const supabase = await getSupabaseServerClient();
   let query = supabase
     .from("services")
-    .select("id, name, description, duration_minutes, price, cost, status, clinic_id, clinics(name)")
+    .select(
+      "id, name, description, duration_minutes, price, cost, status, clinic_id, clinics(name)",
+    )
     .eq("organization_id", organizationId)
     .is("deleted_at", null);
 
@@ -57,7 +59,9 @@ export async function listServices(
  */
 export async function listServiceOptions(
   organizationId: string,
-): Promise<{ id: string; name: string; durationMinutes: number; price: string; clinicId: string }[]> {
+): Promise<
+  { id: string; name: string; durationMinutes: number; price: string; clinicId: string }[]
+> {
   const supabase = await getSupabaseServerClient();
   const { data } = await supabase
     .from("services")
@@ -73,5 +77,35 @@ export async function listServiceOptions(
     durationMinutes: s.duration_minutes,
     price: s.price.toFixed(2),
     clinicId: s.clinic_id,
+  }));
+}
+
+export type ServiceSupplyRow = {
+  id: string;
+  productId: string;
+  productName: string;
+  sku: string | null;
+  unitOfMeasure: string;
+  quantity: string;
+  notes: string | null;
+};
+
+/** "Service -> Required Supplies" (section 11) -- read by the service detail/edit UI. */
+export async function listServiceSupplies(serviceId: string): Promise<ServiceSupplyRow[]> {
+  const supabase = await getSupabaseServerClient();
+  const { data } = await supabase
+    .from("service_products")
+    .select("id, product_id, quantity, notes, products(name, sku, unit_of_measure)")
+    .eq("service_id", serviceId)
+    .order("created_at");
+
+  return (data ?? []).map((r) => ({
+    id: r.id,
+    productId: r.product_id,
+    productName: r.products?.name ?? "Unknown product",
+    sku: r.products?.sku ?? null,
+    unitOfMeasure: r.products?.unit_of_measure ?? "unit",
+    quantity: r.quantity.toFixed(3),
+    notes: r.notes,
   }));
 }
