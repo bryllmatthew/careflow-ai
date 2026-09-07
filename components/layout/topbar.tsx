@@ -36,7 +36,7 @@ export function Topbar({
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <header className="bg-background flex h-14 shrink-0 items-center gap-3 border-b px-4">
+    <header className="bg-card ring-foreground/[0.06] shadow-liquid flex h-14 shrink-0 items-center gap-3 rounded-2xl px-3 ring-1">
       {/* Mobile nav trigger -- the sidebar itself is desktop-only (see AppShell) */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetTrigger asChild>

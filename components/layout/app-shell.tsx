@@ -15,23 +15,27 @@ export function AppShell({
   children: ReactNode;
 }) {
   return (
-    <div className="flex min-h-dvh">
+    // h-dvh + per-pane scrolling (rather than min-h-dvh + page scroll) is what
+    // lets the sidebar stay a fixed floating panel while only the content
+    // scrolls -- the reference layout's behaviour.
+    <div className="flex h-dvh gap-3 p-3">
       {/* Desktop sidebar. Mobile gets the same nav inside Topbar's Sheet drawer
           rather than a second implementation. */}
-      <aside className="bg-sidebar text-sidebar-foreground hidden w-64 shrink-0 flex-col border-r md:flex">
-        <div className="flex h-14 shrink-0 items-center border-b px-4 text-sm font-semibold">
+      <aside className="bg-sidebar text-sidebar-foreground ring-foreground/[0.06] shadow-liquid hidden w-64 shrink-0 flex-col rounded-2xl ring-1 md:flex">
+        <div className="flex h-14 shrink-0 items-center gap-2 px-5 text-sm font-semibold">
+          <span className="bg-primary size-2.5 rounded-full" aria-hidden />
           CareFlow AI
         </div>
         <SidebarNav visibleHrefs={visibleHrefs} />
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col gap-3">
         <Topbar
           organizationName={organizationName}
           userEmail={userEmail}
           visibleHrefs={visibleHrefs}
         />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        <main className="min-h-0 flex-1 overflow-y-auto pb-2">{children}</main>
       </div>
     </div>
   );

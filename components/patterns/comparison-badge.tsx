@@ -14,25 +14,28 @@ export function ComparisonBadge({
   /** True for metrics where a decrease is the good direction (no-show rate, cancellation rate). */
   invertGood?: boolean;
 }) {
+  const pill =
+    "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap";
+
   if (change.kind === "no_data") {
-    return <span className="text-muted-foreground text-xs">N/A</span>;
+    return <span className={`${pill} bg-muted text-muted-foreground`}>N/A</span>;
   }
   if (change.kind === "new") {
-    return <span className="text-info text-xs font-medium">New</span>;
+    return <span className={`${pill} bg-tint-info text-tint-info-foreground`}>New</span>;
   }
 
   const isGood = invertGood ? change.direction === "down" : change.direction === "up";
-  const colorClass =
+  const toneClass =
     change.direction === "flat"
-      ? "text-muted-foreground"
+      ? "bg-muted text-muted-foreground"
       : isGood
-        ? "text-success"
-        : "text-destructive";
+        ? "bg-tint-success text-tint-success-foreground"
+        : "bg-tint-destructive text-tint-destructive-foreground";
   const Icon =
     change.direction === "up" ? ArrowUp : change.direction === "down" ? ArrowDown : Minus;
 
   return (
-    <span className={`inline-flex items-center gap-0.5 text-xs font-medium ${colorClass}`}>
+    <span className={`${pill} ${toneClass}`}>
       <Icon className="size-3" aria-hidden />
       {formatPercentChange(change)}
     </span>

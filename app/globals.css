@@ -51,6 +51,18 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --color-tint-primary: var(--tint-primary);
+  --color-tint-primary-foreground: var(--tint-primary-foreground);
+  --color-tint-success: var(--tint-success);
+  --color-tint-success-foreground: var(--tint-success-foreground);
+  --color-tint-warning: var(--tint-warning);
+  --color-tint-warning-foreground: var(--tint-warning-foreground);
+  --color-tint-destructive: var(--tint-destructive);
+  --color-tint-destructive-foreground: var(--tint-destructive-foreground);
+  --color-tint-info: var(--tint-info);
+  --color-tint-info-foreground: var(--tint-info-foreground);
+  --shadow-liquid: var(--elevation-liquid);
+  --shadow-liquid-lg: var(--elevation-liquid-lg);
 }
 
 /*
@@ -72,8 +84,16 @@
  * deferred to Task 1.16, which loads the dataviz skill before choosing a
  * categorical palette rather than improvising one here.
  */
+/*
+ * "Liquid" surface model: the page is a soft, very slightly cool gray canvas
+ * and every card/panel is pure white sitting ON it. That one split -- rather
+ * than white-on-white separated by a hard 1px border -- is what makes
+ * surfaces read as floating, so borders can recede to a whisper and
+ * elevation is carried by shadow instead. --card therefore stays at pure
+ * white while --background steps down.
+ */
 :root {
-  --background: oklch(1 0 0);
+  --background: oklch(0.968 0.003 250);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -81,12 +101,17 @@
   --popover-foreground: oklch(0.145 0 0);
   --primary: oklch(0.47 0.19 264);
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
+  --secondary: oklch(0.965 0.003 250);
   --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
+  /* Deliberately a step DARKER than --background, not equal to it: --muted is
+     used both on white cards and directly on the canvas (tab tracks, hover
+     states, skeletons). If it matched the canvas exactly, anything muted
+     sitting on the canvas -- and any bg-card element sitting on a muted track,
+     like the active tab -- would vanish. */
+  --muted: oklch(0.952 0.004 250);
   --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --accent: oklch(0.965 0.006 264);
+  --accent-foreground: oklch(0.3 0.09 264);
   --destructive: oklch(0.577 0.245 27.325);
   --success: oklch(0.52 0.14 152);
   --success-foreground: oklch(0.985 0 0);
@@ -94,9 +119,35 @@
   --warning-foreground: oklch(0.18 0 0);
   --info: oklch(0.5 0.15 230);
   --info-foreground: oklch(0.985 0 0);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
+  --border: oklch(0.93 0.003 250);
+  --input: oklch(0.93 0.003 250);
   --ring: oklch(0.6 0.14 264);
+  /*
+   * Tinted chip surfaces (pale fill + saturated ink) for status pills, icon
+   * badges and delta chips. The *-foreground values are deliberately much
+   * darker than the equivalent solid --success/--warning/--info fills: those
+   * are tuned for white text ON them, which is the opposite contrast problem.
+   * At L≈0.45-0.5 ink on an L≈0.955-0.965 tint, every pair clears WCAG AA.
+   */
+  --tint-primary: oklch(0.955 0.022 264);
+  --tint-primary-foreground: oklch(0.45 0.19 264);
+  --tint-success: oklch(0.955 0.035 152);
+  --tint-success-foreground: oklch(0.45 0.13 152);
+  --tint-warning: oklch(0.963 0.04 85);
+  --tint-warning-foreground: oklch(0.48 0.12 70);
+  --tint-destructive: oklch(0.955 0.025 27);
+  --tint-destructive-foreground: oklch(0.5 0.2 27);
+  --tint-info: oklch(0.955 0.028 230);
+  --tint-info-foreground: oklch(0.45 0.14 230);
+  /*
+   * Two-layer diffused shadow -- a tight contact shadow plus a wide soft one.
+   * Kept low-opacity and cool-tinted so it reads as depth on the gray canvas
+   * rather than as a gray outline.
+   */
+  --elevation-liquid:
+    0 1px 2px 0 oklch(0.2 0.02 264 / 4%), 0 4px 16px -2px oklch(0.2 0.02 264 / 6%);
+  --elevation-liquid-lg:
+    0 2px 4px 0 oklch(0.2 0.02 264 / 5%), 0 12px 32px -4px oklch(0.2 0.02 264 / 10%);
   /* Validated categorical order (dataviz skill reference palette, light mode):
      blue / orange / aqua / yellow / magenta. Worst adjacent CVD ΔE 9.1,
      worst adjacent normal-vision ΔE 19.6 (OKLab ×100) -- do not reorder or
@@ -106,32 +157,44 @@
   --chart-3: #1baf7a;
   --chart-4: #eda100;
   --chart-5: #e87ba4;
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
+  /* 14px base. The scale below it is proportional, so this alone moves cards
+     to ~20px and controls/inputs to ~11px -- round enough to read as soft,
+     short of the cartoonish end. */
+  --radius: 0.875rem;
+  --sidebar: oklch(1 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.47 0.19 264);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
+  /* Active nav pill: the same pale indigo as --tint-primary, so selection
+     reads as an accent rather than as "gray box." */
+  --sidebar-accent: oklch(0.955 0.022 264);
+  --sidebar-accent-foreground: oklch(0.4 0.17 264);
+  --sidebar-border: oklch(0.93 0.003 250);
   --sidebar-ring: oklch(0.6 0.14 264);
 }
 
+/*
+ * Dark mode keeps the same canvas/card relationship, just inverted: the
+ * canvas is the darkest layer and cards step UP toward the light, so the
+ * "floating panel" reading survives. Shadows do less work here (they barely
+ * register on dark surfaces), so the near-invisible ring on cards carries
+ * proportionally more of the separation.
+ */
 .dark {
-  --background: oklch(0.145 0 0);
+  --background: oklch(0.145 0.004 264);
   --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
+  --card: oklch(0.205 0.005 264);
   --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
+  --popover: oklch(0.205 0.005 264);
   --popover-foreground: oklch(0.985 0 0);
   --primary: oklch(0.72 0.17 264);
   --primary-foreground: oklch(0.15 0 0);
-  --secondary: oklch(0.269 0 0);
+  --secondary: oklch(0.269 0.005 264);
   --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
+  --muted: oklch(0.269 0.005 264);
   --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --accent: oklch(0.3 0.03 264);
+  --accent-foreground: oklch(0.93 0.03 264);
   --destructive: oklch(0.704 0.191 22.216);
   --success: oklch(0.72 0.15 152);
   --success-foreground: oklch(0.15 0 0);
@@ -139,9 +202,23 @@
   --warning-foreground: oklch(0.15 0 0);
   --info: oklch(0.72 0.14 230);
   --info-foreground: oklch(0.15 0 0);
-  --border: oklch(1 0 0 / 10%);
+  --border: oklch(1 0 0 / 8%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.6 0.16 264);
+  /* Same chip system, inverted: a dim saturated fill that sits just above the
+     card surface, with light ink on it. */
+  --tint-primary: oklch(0.32 0.07 264);
+  --tint-primary-foreground: oklch(0.84 0.11 264);
+  --tint-success: oklch(0.31 0.06 152);
+  --tint-success-foreground: oklch(0.85 0.13 152);
+  --tint-warning: oklch(0.33 0.06 70);
+  --tint-warning-foreground: oklch(0.87 0.13 85);
+  --tint-destructive: oklch(0.32 0.07 27);
+  --tint-destructive-foreground: oklch(0.83 0.12 22);
+  --tint-info: oklch(0.31 0.06 230);
+  --tint-info-foreground: oklch(0.85 0.11 230);
+  --elevation-liquid: 0 1px 2px 0 oklch(0 0 0 / 24%), 0 4px 16px -2px oklch(0 0 0 / 32%);
+  --elevation-liquid-lg: 0 2px 4px 0 oklch(0 0 0 / 28%), 0 12px 32px -4px oklch(0 0 0 / 42%);
   /* Same order, stepped for the dark chart surface -- worst adjacent CVD ΔE
      8.4, worst adjacent normal-vision ΔE 19.3. */
   --chart-1: #3987e5;
@@ -149,13 +226,13 @@
   --chart-3: #199e70;
   --chart-4: #c98500;
   --chart-5: #d55181;
-  --sidebar: oklch(0.205 0 0);
+  --sidebar: oklch(0.205 0.005 264);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.72 0.17 264);
   --sidebar-primary-foreground: oklch(0.15 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-accent: oklch(0.32 0.07 264);
+  --sidebar-accent-foreground: oklch(0.88 0.1 264);
+  --sidebar-border: oklch(1 0 0 / 8%);
   --sidebar-ring: oklch(0.6 0.16 264);
 }
 

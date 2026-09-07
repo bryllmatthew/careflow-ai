@@ -12,7 +12,11 @@ function Card({
       data-slot="card"
       data-size={size}
       className={cn(
-        "group/card bg-card text-card-foreground ring-foreground/10 flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl py-(--card-spacing) text-sm ring-1 [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+        // Elevation, not outline: a whisper-thin ring plus the two-layer
+        // liquid shadow. On the gray canvas the shadow does the separating,
+        // so the ring only has to keep the edge crisp (and carry the load in
+        // dark mode, where shadows barely register).
+        "group/card bg-card text-card-foreground ring-foreground/[0.06] shadow-liquid flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl py-(--card-spacing) text-sm ring-1 [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
         className,
       )}
       {...props}
@@ -77,7 +81,7 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-footer"
       className={cn(
-        "bg-muted/50 flex items-center rounded-b-xl border-t p-(--card-spacing)",
+        "bg-muted/60 flex items-center rounded-b-xl border-t p-(--card-spacing)",
         className,
       )}
       {...props}

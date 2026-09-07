@@ -30,10 +30,10 @@ export function SidebarNav({
   })).filter((section) => section.items.length > 0);
 
   return (
-    <nav className="flex flex-col gap-6 overflow-y-auto px-3 py-4">
+    <nav className="flex flex-col gap-5 overflow-y-auto px-3 pt-1 pb-4">
       {sections.map((section) => (
         <div key={section.title}>
-          <p className="text-muted-foreground px-3 pb-1 text-xs font-medium tracking-wide uppercase">
+          <p className="text-muted-foreground px-3 pb-1.5 text-[0.6875rem] font-medium tracking-wider uppercase">
             {section.title}
           </p>
           <div className="flex flex-col gap-0.5">
@@ -47,10 +47,10 @@ export function SidebarNav({
                   onClick={onNavigate}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors",
+                    "flex items-center gap-2.5 rounded-full px-3 py-2 text-sm transition-colors",
                     active
                       ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                      : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                      : "text-sidebar-foreground/70 hover:bg-muted hover:text-sidebar-foreground",
                   )}
                 >
                   <Icon className="size-4 shrink-0" aria-hidden />

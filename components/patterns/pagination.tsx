@@ -69,4 +69,4 @@ export function Pagination({
 // clickable), so an unclickable state has to be a non-interactive element
 // styled to match, not a Button/Link pretending to be disabled.
 const buttonLikeClasses =
-  "inline-flex items-center justify-center gap-2 rounded-lg border bg-background px-3 h-8 text-sm font-medium";
+  "inline-flex items-center justify-center gap-2 rounded-lg border bg-card px-3 h-8 text-sm font-medium";
