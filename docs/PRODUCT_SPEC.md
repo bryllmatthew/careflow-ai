@@ -506,3 +506,30 @@ Services
 Revenue
 
 This allows the platform to eventually measure marketing ROI.
+
+---
+
+## Phase 10 - Private Clinic Online Booking (shipped)
+
+Every clinic can publish its own patient-facing booking page at `/book/{slug}`, branded from
+its own clinic record. Patients book without an account.
+
+- **Branding is dynamic.** Clinic name, logo, address, contact details and opening hours all
+  come from the clinic record. Renaming a clinic or replacing its logo changes the public
+  page on the next request, with no booking-page edit. There is no separate "booking page
+  clinic name" to keep in sync.
+- **Publishing is opt-in.** Services and practitioners appear publicly only when explicitly
+  switched on, so enabling online booking never exposes an internal catalogue or a colleague
+  who does not see patients.
+- **Availability is server-computed** from the clinic's opening hours, the service duration
+  and the practitioner's existing appointments, and rechecked at submission. The database's
+  double-booking constraint remains the final arbiter.
+- **Bookings are ordinary appointments** -- same table, same calendar, same reminders, same
+  reports -- tagged with where they came from.
+- **Patients can cancel or reschedule** through a private link, within limits the clinic
+  sets.
+- **Campaign links and QR codes** let a clinic tell which channel produced which bookings.
+
+Not in this phase: the CareFlow public marketplace, clinic discovery, reviews, marketplace
+payments, deposits at booking time, and autonomous AI booking. See
+`docs/modules/ONLINE_BOOKING.md` for the deferrals and their reasons.

@@ -235,6 +235,52 @@ Recorded so the code and docs stop contradicting each other:
   replies are short operational answers, not long-form generation, so this is `CLAUDE.md`'s own
   "implement the smallest complete version" principle, not an oversight — see
   `docs/modules/AI_ASSISTANT.md` "Deferred."
+- **Phase 10 adds an availability engine, because Phase 3 never built one.** Appointments
+  were booked at an arbitrary instant with the `appointments_no_staff_overlap` EXCLUDE
+  constraint as the only arbiter — fine for a receptionist looking at a calendar, unusable
+  for a patient who cannot see one. `app.booking_slots()` generates slots from the existing
+  primitives (`clinics.operating_hours`, `services.duration_minutes`, the same
+  `appointments` rows and status exclusions the EXCLUDE constraint uses), and the constraint
+  remains the final arbiter at write time. It is not a second scheduling system: slot
+  generation makes conflicts rare, the constraint makes them impossible. See
+  `docs/modules/ONLINE_BOOKING.md`.
+- **The appointment automation rule loop moved from TypeScript into SQL**
+  (`public.run_appointment_automation`, migration 0020); `lib/automation/dispatch.ts` is now
+  a wrapper over it. Forced by a real requirement, not a refactor for its own sake: a public
+  booking has no signed-in caller, so the TypeScript version — which depended on the
+  caller's own INSERT rights on `reminders`/`follow_ups` — could not run for it. One engine,
+  two entry points, rather than a second copy of the rules for the anonymous path. The
+  invoice-side dispatcher stayed in TypeScript; no anonymous invoice path exists to force
+  the same move.
+- **The public booking page reaches the database only through SECURITY DEFINER RPCs.** `anon`
+  holds no privilege on any table (migration 0001 revoked them; Phase 10 kept it that way),
+  so the anonymous capability surface is a short list of function grants rather than a matrix
+  of policies. RLS answers "which rows may this caller see?", and the booking page needs
+  "given a slug, project a curated view of one clinic" — a function, not a predicate.
+- **Phase 10 uses two new permissions (`booking.view`, `booking.manage`), not the seven the
+  brief suggested**, and branding reuses the existing `clinic.update` — a logo is a clinic
+  detail, and whoever may rename a clinic may set its logo. Same coarse-grain reasoning as
+  Phase 7's inventory permissions.
+- **Clinic branding (`slug`, `logo_url`) lives on `public.clinics`, not a `clinic_branding`
+  table**, and there is no editable "booking page clinic name" anywhere — `clinics.name` is
+  the only name the public page shows. Booking _policy_ does get its own table
+  (`clinic_booking_settings`) because it is genuinely separable from clinic identity.
+- **Clinic logo uploads accept PNG/JPEG/WEBP only; SVG is rejected.** An SVG is an
+  executable document embedded on a public page, and accepting it safely needs a sanitizer
+  this project does not have. MIME type is verified by magic bytes, never from the
+  client-declared `file.type`.
+- **No deposit or online-payment step at booking time.** The `PaymentProvider` is
+  `not-configured` and no gateway exists, so a "require deposit" toggle could not be
+  honored — a clinic would believe it was collecting deposits it never received. The
+  booking RPCs leave the seam open. Deliberately absent rather than shipped inert.
+- **No practitioner↔service eligibility.** Nothing in Phases 1–9 models it (no staff table,
+  no practitioner-requirement column on `services`), so public practitioner visibility is
+  clinic-scoped only rather than inventing an unpopulated eligibility matrix.
+- **Rate limiting is a Postgres fixed-window counter (`booking_rate_limits`), and there is
+  no CAPTCHA.** There is no Redis and serverless functions share no memory, so the database
+  is the only place a counter can be shared between concurrent requests. The client key is a
+  SHA-256 of the forwarded IP, never the IP itself. With no forwarded address the limiter
+  fails open — it is a throttle, not an authorization check.
 - **`vercel.json`'s cron schedules run once daily, not every 15 minutes / hourly**, on the deployed
   Vercel Hobby (free) plan, which caps cron frequency at once per day — a platform constraint, not a
   design choice. This means `reminder_24h`/`reminder_2h` reminders and overdue-invoice detection are

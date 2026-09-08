@@ -693,3 +693,60 @@ Users cannot grant themselves permissions.
 A user cannot modify an appointment belonging to an inaccessible clinic.
 
 Authorization tests are mandatory before declaring the MVP production-ready.
+
+---
+
+## Phase 10 addendum - online booking and the anonymous surface
+
+Phase 10 introduces the first surface in this application reachable with **no session at
+all**. It does not weaken the model; it sits outside it, deliberately and narrowly.
+
+### Two new permissions
+
+| Permission | Covers | Granted to |
+| --- | --- | --- |
+| `booking.view` | The booking dashboard, links and settings, read-only | owner, admin, clinic_manager, receptionist |
+| `booking.manage` | Enabling booking, configuring it, managing links, publishing services and practitioners | owner, admin, clinic_manager |
+
+Clinic branding (logo, slug) reuses **`clinic.update`** rather than a separate
+`clinic.branding.manage`: a logo is a clinic detail, and whoever may rename a clinic may set
+its logo. The coarse grain follows the precedent recorded for Phase 7.
+
+### The anonymous surface
+
+`anon` holds **no privilege on any table** -- migration 0001 revoked them and Phase 10 kept
+it that way. Anonymous access is exactly this list of SECURITY DEFINER functions:
+
+- `public.get_public_booking_page(slug, link_token)`
+- `public.get_public_booking_availability(...)`
+- `public.create_public_booking(...)`
+- `public.get_public_booking(token)`
+- `public.cancel_public_booking(token, client_key)`
+- `public.reschedule_public_booking(token, start_at, client_key)`
+
+Every one derives the organization and clinic from the slug or from the appointment row.
+**No public function accepts an `organization_id` or `clinic_id`** -- section 8's rule,
+applied to a caller who has no session to derive them from either.
+
+The internal helpers (`app.bookable_clinic`, `app.booking_slots`,
+`app.public_practitioner_ids`, `app.consume_rate_limit`, `app.generate_booking_reference`,
+`app.normalize_phone`, `app.booking_by_token`) are revoked from `public`, `anon` **and**
+`authenticated`; they are reachable only from inside the granted functions.
+
+`public.run_appointment_automation` is granted to `authenticated` only, and verifies active
+membership when a caller exists. The anonymous booking path reaches it exclusively from
+inside `create_public_booking`.
+
+### Patient self-service
+
+Cancel and reschedule are authorized by an unguessable token compared as a SHA-256 hash.
+There is no public `/appointment/{id}` surface: the appointment id alone opens nothing.
+Eligibility is recomputed in the database on every call, never carried over from what the
+page rendered.
+
+### Negative matrix additions
+
+`supabase/tests/online_booking_test.sql` adds 38 assertions to the merge gate, covering
+anonymous table denial, cross-tenant service/practitioner injection through a valid slug,
+unpublished-service booking, disabled-clinic booking, forged start times, double-booking,
+and idempotent replay.

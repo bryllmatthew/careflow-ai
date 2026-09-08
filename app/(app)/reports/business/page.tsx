@@ -1,4 +1,4 @@
-import { CalendarCheck, UserPlus, CheckCircle2, XCircle, Ban, Users } from "lucide-react";
+import { CalendarCheck, UserPlus, CheckCircle2, XCircle, Ban, Users, Globe } from "lucide-react";
 import { getAuthContext } from "@/lib/auth/session";
 import { requirePermission } from "@/lib/auth/require-permission";
 import { PageHeader } from "@/components/patterns/page-header";
@@ -31,6 +31,7 @@ import {
   getPractitionerPerformance,
 } from "../performance-queries";
 import { getFollowUpReport, getReminderReport } from "../followup-queries";
+import { getOnlineBookingMetrics } from "../../booking/queries";
 
 export default async function BusinessReportsPage({
   searchParams,
@@ -68,6 +69,7 @@ export default async function BusinessReportsPage({
     practitionerPerformance,
     followUps,
     reminders,
+    onlineBooking,
   ] = await Promise.all([
     getAppointmentSummary(appointmentScope),
     getAppointmentTrend(appointmentScope),
@@ -78,6 +80,11 @@ export default async function BusinessReportsPage({
     getPractitionerPerformance(baseScope, clinicId),
     getFollowUpReport({ organizationId, clinicId, range }),
     getReminderReport({ organizationId, clinicId, range }),
+    getOnlineBookingMetrics(organizationId, {
+      startISO: range.startUtc,
+      endISO: range.endUtc,
+      clinicId,
+    }),
   ]);
 
   return (
@@ -102,6 +109,7 @@ export default async function BusinessReportsPage({
           <TabsTrigger value="practitioners">Practitioners</TabsTrigger>
           <TabsTrigger value="followups">Follow-ups</TabsTrigger>
           <TabsTrigger value="reminders">Reminders</TabsTrigger>
+          <TabsTrigger value="online">Online Booking</TabsTrigger>
         </TabsList>
 
         <TabsContent value="appointments" className="flex flex-col gap-4">
@@ -363,7 +371,103 @@ export default async function BusinessReportsPage({
             />
           </div>
         </TabsContent>
+
+        {/*
+          Phase 10 online-booking metrics, computed from the appointments table
+          the rest of this page already reads -- booking_source is a column on
+          the appointment, not a separate analytics store (brief section 43).
+        */}
+        <TabsContent value="online" className="flex flex-col gap-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+            <StatTile
+              label="Booked Online"
+              icon={Globe}
+              value={String(onlineBooking.online)}
+              tone="info"
+            />
+            <StatTile
+              label="All Bookings"
+              icon={CalendarCheck}
+              value={String(onlineBooking.total)}
+            />
+            <StatTile
+              label="Online Share"
+              icon={CheckCircle2}
+              value={onlineBooking.total === 0 ? "N/A" : formatPercent(onlineBooking.onlineShare)}
+              tone="success"
+            />
+          </div>
+
+          {onlineBooking.online === 0 ? (
+            <Card className="p-5">
+              <p className="text-muted-foreground text-sm">
+                No online bookings in {range.label.toLowerCase()}. Set a clinic&apos;s booking page
+                live under Schedule &rarr; Online Booking to start taking them.
+              </p>
+            </Card>
+          ) : (
+            <div className="grid gap-4 lg:grid-cols-2">
+              <BreakdownTable
+                title="By service"
+                head="Service"
+                rows={onlineBooking.byService.map((r) => ({ label: r.name, count: r.count }))}
+              />
+              <BreakdownTable
+                title="By practitioner"
+                head="Practitioner"
+                rows={onlineBooking.byPractitioner.map((r) => ({ label: r.name, count: r.count }))}
+              />
+              <BreakdownTable
+                title="By source"
+                head="Source"
+                rows={onlineBooking.bySource.map((r) => ({ label: r.source, count: r.count }))}
+              />
+              <BreakdownTable
+                title="By campaign"
+                head="Campaign"
+                rows={onlineBooking.byCampaign.map((r) => ({ label: r.campaign, count: r.count }))}
+              />
+            </div>
+          )}
+        </TabsContent>
       </UrlTabs>
     </div>
+  );
+}
+
+/** Small shared table for the four online-booking attribution breakdowns. */
+function BreakdownTable({
+  title,
+  head,
+  rows,
+}: {
+  title: string;
+  head: string;
+  rows: { label: string; count: number }[];
+}) {
+  return (
+    <Card className="p-5">
+      <p className="mb-3 font-medium">{title}</p>
+      {rows.length === 0 ? (
+        <p className="text-muted-foreground text-sm">Nothing recorded.</p>
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>{head}</TableHead>
+              <TableHead className="text-right">Bookings</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((row) => (
+              <TableRow key={row.label}>
+                <TableCell>{row.label}</TableCell>
+                <TableCell className="text-right tabular-nums">{row.count}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
+    </Card>
   );
 }

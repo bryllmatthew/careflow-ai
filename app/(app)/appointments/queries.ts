@@ -8,7 +8,8 @@ const APPOINTMENT_SELECT =
   "id, start_at, end_at, status, notes, clinic_id, clinics(name), " +
   "patient_id, patients(first_name, last_name), " +
   "staff_id, staff:profiles!appointments_staff_id_fkey(full_name, email), " +
-  "service_id, services(name, duration_minutes, price)";
+  "service_id, services(name, duration_minutes, price), " +
+  "booking_source, booking_reference";
 
 export type AppointmentRow = {
   id: string;
@@ -26,6 +27,10 @@ export type AppointmentRow = {
   serviceName: string | null;
   serviceDurationMinutes: number | null;
   servicePrice: string | null;
+  /** admin | direct_booking | marketplace -- Phase 10 (migration 0019). */
+  bookingSource: string;
+  /** The patient-facing "CF-XXXXXX" reference, for bookings made online. */
+  bookingReference: string | null;
 };
 
 type RawAppointment = {
@@ -42,6 +47,8 @@ type RawAppointment = {
   staff: { full_name: string | null; email: string | null } | null;
   service_id: string;
   services: { name: string; duration_minutes: number; price: number } | null;
+  booking_source: string;
+  booking_reference: string | null;
 };
 
 function mapAppointment(a: RawAppointment): AppointmentRow {
@@ -61,6 +68,8 @@ function mapAppointment(a: RawAppointment): AppointmentRow {
     serviceName: a.services?.name ?? null,
     serviceDurationMinutes: a.services?.duration_minutes ?? null,
     servicePrice: a.services ? a.services.price.toFixed(2) : null,
+    bookingSource: a.booking_source,
+    bookingReference: a.booking_reference,
   };
 }
 

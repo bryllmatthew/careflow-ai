@@ -287,6 +287,70 @@ begin
     (v_org_id, v_clinic1_id, v_patient_pedro_id, 'payment', 'pending', 'high', date_trunc('day', v_now) + interval '10 hours', v_receptionist_id, 'Follow up on the overdue root canal invoice.'),
     (v_org_id, v_clinic1_id, v_patient_liza_id, 'post_appointment', 'pending', 'normal', v_now + interval '3 days', v_practitioner_id, 'Check in after cleaning -- any sensitivity?');
 
+  -- --------------------------------------------------------------------------
+  -- Phase 10: the first clinic's public booking page, live and bookable at
+  -- /book/smile-dental.
+  --
+  -- Operating hours are set HERE for the first time -- clinics.operating_hours
+  -- has existed since migration 0001 and nothing has ever written to it,
+  -- because no feature read it until the availability engine did. Without it
+  -- the booking page renders correctly and offers no times at all, which is
+  -- accurate but makes for a poor demo.
+  -- --------------------------------------------------------------------------
+  update public.clinics
+     set slug = 'smile-dental',
+         -- Every monetary and location example in the spec set is Philippine
+         -- (docs/AI_TOOLS.md, docs/UI_UX_SPEC.md), and the availability engine
+         -- renders slots in the CLINIC's zone -- so the demo clinic should not
+         -- sit in UTC.
+         timezone = 'Asia/Manila',
+         operating_hours = '{"mon":[{"open":"09:00","close":"12:00"},{"open":"13:00","close":"17:00"}],
+                             "tue":[{"open":"09:00","close":"12:00"},{"open":"13:00","close":"17:00"}],
+                             "wed":[{"open":"09:00","close":"12:00"},{"open":"13:00","close":"17:00"}],
+                             "thu":[{"open":"09:00","close":"12:00"},{"open":"13:00","close":"17:00"}],
+                             "fri":[{"open":"09:00","close":"12:00"},{"open":"13:00","close":"17:00"}],
+                             "sat":[{"open":"09:00","close":"12:00"}]}'::jsonb
+   where id = v_clinic1_id;
+
+  update public.clinics set slug = 'smile-dental-cebu' where id = v_clinic2_id;
+
+  insert into public.clinic_booking_settings (
+    organization_id, clinic_id, online_booking_enabled, min_notice_hours,
+    max_advance_days, confirmation_mode, welcome_message
+  )
+  values (
+    v_org_id, v_clinic1_id, true, 2, 45, 'manual',
+    'Choose a service to get started. We''ll confirm your appointment by text.'
+  );
+
+  -- Cleaning and whitening are publishable; the root canal deliberately is
+  -- not, so the demo shows that publishing is per-service and opt-in.
+  update public.services
+     set online_booking_enabled = true
+   where id in (v_service_cleaning_id, v_service_whitening_id);
+
+  update public.services
+     set public_name = 'Teeth Whitening (in-clinic)',
+         public_description = 'A single 60-minute in-clinic whitening session.'
+   where id = v_service_whitening_id;
+
+  insert into public.clinic_booking_practitioners (
+    organization_id, clinic_id, user_id, display_name, title, bio, active
+  )
+  values (
+    v_org_id, v_clinic1_id, v_practitioner_id, 'Dr. Ramon Cruz', 'Dentist',
+    'General and cosmetic dentistry, 12 years in practice.', true
+  );
+
+  insert into public.booking_links (
+    organization_id, clinic_id, name, token,
+    default_service_id, utm_source, utm_medium, utm_campaign, created_by
+  )
+  values (
+    v_org_id, v_clinic1_id, 'Facebook — cleaning promo', 'fbcleaning2026',
+    v_service_cleaning_id, 'facebook', 'paid', 'cleaning-promo', v_admin_id
+  );
+
   raise notice 'Seed complete: organization %, clinics % / %, staff % / %',
     v_org_id, v_clinic1_id, v_clinic2_id, v_practitioner_id, v_receptionist_id;
 end $$;

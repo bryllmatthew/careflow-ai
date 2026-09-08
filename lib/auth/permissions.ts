@@ -40,6 +40,9 @@ export const PERMISSIONS = [
   "services.view",
   "services.manage",
 
+  "booking.view",
+  "booking.manage",
+
   "followups.view",
   "followups.create",
   "followups.manage",

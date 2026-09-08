@@ -504,3 +504,24 @@ Future versions may include:
 - Marketing ROI analysis
 
 These should be added only after the core AI tool architecture is stable.
+
+---
+
+## Phase 10 addition - `get_online_booking_summary`
+
+One read-only tool, bringing the registry to 18 read tools plus 7 action tools.
+
+| Field | Value |
+| --- | --- |
+| Name | `get_online_booking_summary` |
+| Permission | `reports.view` |
+| Inputs | the shared date-range vocabulary, plus an optional `clinicId` **filter** |
+| Returns | total bookings, online bookings, online share, and breakdowns by service, practitioner, marketing source and campaign |
+
+It is a thin wrapper over `getOnlineBookingMetrics()` -- the same function the Business
+Reports page uses -- so the assistant can never disagree with the dashboard. It takes no
+`organization_id`; tenancy comes from the session, as with every other tool.
+
+There is deliberately **no booking action tool**. Section 44's brief rules out autonomous AI
+booking, and a public booking carries patient-supplied contact details the assistant has no
+business inventing.

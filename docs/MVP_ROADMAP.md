@@ -230,3 +230,34 @@ The MVP is complete when a real clinic can:
 12. Track inventory and supplies.
 13. View centralized business dashboards.
 14. Use the AI assistant for operational insights.
+
+---
+
+## Phase 10 - Private Clinic Online Booking (shipped)
+
+Each clinic gets its own patient-facing booking page at `/book/{slug}`, branded from its own
+clinic record, with no patient account required.
+
+Delivered:
+
+- Dynamic clinic branding (name, logo, address/contact, opening hours) sourced from
+  `public.clinics` -- never duplicated into a booking-specific profile.
+- Clinic logo upload / replace / remove, with an initials fallback.
+- Per-clinic booking settings: notice period, booking horizon, slot interval, confirmation
+  mode, self-service permissions, and which contact details are public.
+- Opt-in public services and practitioners.
+- A server-side availability engine (`app.booking_slots`) built on `clinics.operating_hours`
+  and the existing appointment rows -- Phase 3 never had one; see the deviation note in
+  `CLAUDE.md`.
+- Public booking with server-side availability recheck, clinic-scoped patient matching,
+  idempotency, and the existing EXCLUDE constraint as the final double-booking arbiter.
+- Patient self-service cancel/reschedule by unguessable token.
+- Campaign booking links with UTM attribution, and QR codes.
+- Phase 4 reminders, Phase 8 reporting and one Phase 9 AI tool, all through the existing
+  engines.
+
+Explicitly **not** built: the CareFlow public marketplace, clinic discovery/search,
+geolocation, reviews, marketplace payments, and autonomous AI booking. `booking_source`
+already carries `'marketplace'` so that phase needs no schema change.
+
+Full detail: `docs/modules/ONLINE_BOOKING.md`.

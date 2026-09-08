@@ -9,15 +9,6 @@ export type AppointmentTriggerType =
   | "appointment.completed"
   | "appointment.no_show";
 
-export type AppointmentContext = {
-  id: string;
-  organizationId: string;
-  clinicId: string;
-  patientId: string;
-  /** ISO timestamp. */
-  startAt: string;
-};
-
 export type InvoiceTriggerType =
   "invoice.created" | "invoice.issued" | "invoice.overdue" | "invoice.voided";
 
@@ -37,7 +28,6 @@ type FollowUpSourceContext = {
   invoiceId?: string;
 };
 
-type ReminderConfig = { reminder_type: string; hours_before?: number };
 type FollowupConfig = { followup_type: string; due_in_hours?: number; priority?: string };
 
 /** Postgres unique_violation -- the idempotency mechanism, not an error to surface. */
@@ -51,39 +41,37 @@ const UNIQUE_VIOLATION = "23505";
  * row, 'followup' rules upsert a `follow_ups` row. Both upserts rely on a
  * unique partial index (migration 0014) for idempotency -- running the same
  * trigger twice (a retried request, a duplicate call) can never create a
- * duplicate reminder or follow-up; the second insert's 23505 is caught and
- * treated as "already scheduled", not an error.
+ * duplicate reminder or follow-up.
  *
- * Deliberately synchronous with the caller (runs inside the same request as
- * the appointment mutation) -- but cheap: it only ever writes rows here, it
- * never calls an external provider. Actual message delivery is the
- * processor's job (app/api/cron/process-reminders), which runs later and
+ * As of Phase 10 the rule loop itself lives in SQL
+ * (public.run_appointment_automation, migration 0020) and this is a thin
+ * wrapper over it. The move was forced by a real requirement, not a
+ * refactor for its own sake: a public booking (app/book/[slug]) has no
+ * signed-in caller at all, so the TypeScript version -- which depended on
+ * the caller's own INSERT rights on reminders/follow_ups -- could not run
+ * for it. Rather than write a second copy of the rule loop for the
+ * anonymous path, the loop moved to a SECURITY DEFINER function both paths
+ * call. One engine, two entry points, exactly as
+ * docs/modules/ONLINE_BOOKING.md describes for booking itself.
+ *
+ * Still deliberately synchronous with the caller and still cheap: it only
+ * writes rows, never calls an external provider. Actual message delivery is
+ * the processor's job (app/api/cron/process-reminders), which runs later and
  * asynchronously -- see docs/PRODUCT_SPEC.md Phase 4 section 38
  * ("appointment creation must not wait for SMS/email delivery").
  */
 export async function dispatchAppointmentEvent(
   supabase: SupabaseClient<Database>,
   trigger: AppointmentTriggerType,
-  appointment: AppointmentContext,
+  appointmentId: string,
 ): Promise<void> {
-  const { data: rules } = await supabase
-    .from("automation_rules")
-    .select("id, action_type, config")
-    .eq("organization_id", appointment.organizationId)
-    .eq("trigger_type", trigger)
-    .eq("enabled", true);
+  const { error } = await supabase.rpc("run_appointment_automation", {
+    p_appointment_id: appointmentId,
+    p_trigger: trigger,
+  });
 
-  for (const rule of rules ?? []) {
-    if (rule.action_type === "reminder") {
-      await scheduleReminder(supabase, appointment, rule.id, rule.config as ReminderConfig);
-    } else if (rule.action_type === "followup") {
-      await createFollowUp(
-        supabase,
-        { ...appointment, appointmentId: appointment.id },
-        rule.id,
-        rule.config as FollowupConfig,
-      );
-    }
+  if (error) {
+    throw new Error(`Automation dispatch failed for ${trigger}: ${error.message}`);
   }
 }
 
@@ -91,8 +79,9 @@ export async function dispatchAppointmentEvent(
  * The invoice-side counterpart, called from app/(app)/invoices/actions.ts.
  * Only action_type='followup' rules exist for invoice.* triggers today
  * (migration 0015's seed: invoice.overdue -> a 'payment' follow-up) -- no
- * invoice-triggered reminder exists yet, so there is no invoice equivalent
- * of scheduleReminder.
+ * invoice-triggered reminder exists yet, so this stayed in TypeScript when
+ * the appointment side moved to SQL: there is no anonymous invoice path that
+ * would force the same move, and moving it anyway would be churn.
  */
 export async function dispatchInvoiceEvent(
   supabase: SupabaseClient<Database>,
@@ -115,47 +104,6 @@ export async function dispatchInvoiceEvent(
         rule.config as FollowupConfig,
       );
     }
-  }
-}
-
-async function scheduleReminder(
-  supabase: SupabaseClient<Database>,
-  appointment: AppointmentContext,
-  ruleId: string,
-  config: ReminderConfig,
-): Promise<void> {
-  const scheduledFor = config.hours_before
-    ? new Date(new Date(appointment.startAt).getTime() - config.hours_before * 3_600_000)
-    : new Date();
-
-  // A time-based reminder (24h/2h before) that would already be due in the
-  // past by the time it's computed (e.g. confirming an appointment that's
-  // only 30 minutes away) is skipped rather than fired immediately and
-  // mislabeled -- there is no meaningful "24 hours before" left to give.
-  if (config.hours_before && scheduledFor.getTime() <= Date.now()) {
-    return;
-  }
-
-  // Reminders are patient-facing -- a patient has no login and can't receive
-  // an "internal" (in-app) notification, unlike follow-up/appointment
-  // alerts, which go to staff via public.create_notification(). Email is
-  // the channel until a real provider exists; the processor
-  // (app/api/cron/process-reminders) will honestly report it as
-  // unconfigured rather than pretending to deliver it -- see
-  // lib/providers/messaging/not-configured.ts.
-  const { error } = await supabase.from("reminders").insert({
-    organization_id: appointment.organizationId,
-    clinic_id: appointment.clinicId,
-    patient_id: appointment.patientId,
-    appointment_id: appointment.id,
-    automation_rule_id: ruleId,
-    reminder_type: config.reminder_type,
-    channel: "email",
-    scheduled_for: scheduledFor.toISOString(),
-  });
-
-  if (error && error.code !== UNIQUE_VIOLATION) {
-    throw new Error(`Failed to schedule ${config.reminder_type} reminder: ${error.message}`);
   }
 }
 

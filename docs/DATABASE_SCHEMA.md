@@ -417,3 +417,35 @@ Do not unnecessarily store sensitive patient information inside AI interaction l
 8. Prefer soft deletion for important business entities.
 9. Validate organization ownership on every cross-entity operation.
 10. Never trust organization_id supplied directly by an unauthenticated client.
+
+---
+
+## Phase 10 additions - online booking
+
+### New columns on existing tables
+
+| Table | Columns | Notes |
+| --- | --- | --- |
+| `clinics` | `slug`, `logo_url` | Branding lives on the clinic record; `slug` is globally unique among live clinics (the public URL carries no organization component). |
+| `services` | `online_booking_enabled`, `public_name`, `public_description` | Publishing is opt-IN, default false, so enabling booking never exposes an internal catalogue. |
+| `appointments` | `booking_source`, `booking_link_id`, `booking_reference`, `manage_token_hash`, `utm_source`, `utm_medium`, `utm_campaign`, `booking_idempotency_key` | `booking_source` defaults to `'admin'`, so existing rows classify correctly with no backfill; `'marketplace'` is in the CHECK from day one. None of these are in the `authenticated` UPDATE grant -- only the booking RPCs write them. |
+
+### New tables
+
+| Table | Purpose |
+| --- | --- |
+| `clinic_booking_settings` | Per-clinic public booking policy, 1:1 with `clinics`, created on first save. Holds no clinic identity. |
+| `clinic_booking_practitioners` | Opt-in list of publicly bookable practitioners per clinic, with patient-facing name/title/bio. Absence means "not bookable", never "bookable by default". |
+| `booking_links` | Tracked entry points to one clinic's page, carrying UTM attribution and optional service/practitioner pre-selection. Deactivated, never deleted. |
+| `booking_rate_limits` | Fixed-window abuse counters. No client role holds any privilege on it. |
+
+All four carry `organization_id`, composite FKs to `clinics (id, organization_id)` where
+clinic-scoped, `created_at`/`updated_at` with the shared trigger, RLS, and column-level
+UPDATE grants that keep tenancy columns immutable.
+
+### Deliberately not created
+
+`booking_attributions` (three columns on the appointment instead), `booking_tokens` (a hash
+on the appointment it manages), and `clinic_branding` (two columns on `clinics`). Each would
+have been a side table expressing a 1:1 relationship the existing row already has. See
+`docs/modules/ONLINE_BOOKING.md`.

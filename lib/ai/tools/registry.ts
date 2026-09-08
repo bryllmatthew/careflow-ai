@@ -21,10 +21,12 @@ import {
   getInventoryUsageTool,
 } from "./read-inventory";
 import { getClinicPerformanceTool, getPractitionerPerformanceTool } from "./read-performance";
+import { getOnlineBookingSummaryTool } from "./read-booking";
 import { actionTools } from "./action-tools";
 
 /**
- * The complete tool set (docs/AI_TOOLS.md section 4/16): 17 read-only tools
+ * The complete tool set (docs/AI_TOOLS.md section 4/16): 18 read-only tools
+ * -- 17 from Phase 9 plus Phase 10's get_online_booking_summary --
  * -- each a thin, permission-checked wrapper around an EXISTING Phase 5-8
  * query function, never a parallel KPI calculation (CLAUDE.md section 66,
  * docs/modules/REPORTING.md's anti-discrepancy rule) -- plus 7 controlled
@@ -48,6 +50,7 @@ export const allTools: AITool[] = [
   getInventoryUsageTool,
   getClinicPerformanceTool,
   getPractitionerPerformanceTool,
+  getOnlineBookingSummaryTool,
   ...actionTools,
 ];
 

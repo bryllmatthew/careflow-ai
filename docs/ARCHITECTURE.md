@@ -424,3 +424,32 @@ Accounting platforms
 AI providers
 
 Do not tightly couple the core system to a single external provider.
+
+---
+
+## Phase 10 addendum - the public booking service layer
+
+The booking page is the first part of this system that serves users with no session. Two
+architectural consequences:
+
+**1. A dedicated public service layer, not anon-facing RLS.** `anon` holds no table
+privileges. Everything anonymous goes through six SECURITY DEFINER RPCs that each return the
+minimum a booking needs. This is a deliberate inversion of the usual pattern: RLS answers
+"which rows may this caller see?", and a booking page needs "given a slug, project a curated
+view of one clinic" -- a function, not a predicate. It also satisfies the
+one-transaction-per-request constraint, which a booking (resolve patient -> insert
+appointment -> fire automation) cannot avoid.
+
+**2. One booking engine, many entry points.** Nothing in the engine assumes a booking came
+from a direct clinic link. `booking_source` distinguishes `admin` / `direct_booking` /
+`marketplace`, and the last is in the schema from day one so a future marketplace is another
+entry point rather than a rewrite.
+
+Phase 10 also moved the appointment automation rule loop from TypeScript into SQL
+(`public.run_appointment_automation`) so the anonymous path and the staff path share one
+implementation -- see `CLAUDE.md` for why this was forced rather than chosen.
+
+Provider interfaces are unchanged. A `StorageProvider` abstraction was **not** introduced:
+clinic logos use Supabase Storage directly through the same RLS-respecting client everything
+else uses, and one bucket with three policies did not justify an interface with a single
+implementation.

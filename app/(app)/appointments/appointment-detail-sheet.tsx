@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import { AppointmentStatusBadge } from "@/components/patterns/appointment-status-badge";
 import { FollowUpStatusBadge } from "@/components/patterns/followup-badges";
 import { Money } from "@/components/patterns/money";
@@ -187,6 +188,28 @@ export function AppointmentDetailSheet({
                 new Date(appointment.endAt),
               )}
             </dd>
+
+            {/*
+              Shown only for a booking the patient made themselves. A
+              staff-created appointment has no provenance worth a row -- every
+              appointment used to be one, so labelling them all "Admin" would
+              add a line of noise to every sheet in the app.
+            */}
+            {appointment.bookingSource !== "admin" && (
+              <>
+                <dt className="text-muted-foreground">Booked</dt>
+                <dd className="col-span-2 flex flex-wrap items-center gap-2">
+                  <Badge className="bg-tint-info text-tint-info-foreground rounded-full border-transparent">
+                    Online
+                  </Badge>
+                  {appointment.bookingReference && (
+                    <span className="text-muted-foreground font-mono text-xs tracking-wide">
+                      {appointment.bookingReference}
+                    </span>
+                  )}
+                </dd>
+              </>
+            )}
           </dl>
 
           {appointment.notes && (

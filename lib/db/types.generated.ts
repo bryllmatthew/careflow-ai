@@ -237,10 +237,15 @@ export type Database = {
       }
       appointments: {
         Row: {
+          booking_idempotency_key: string | null
+          booking_link_id: string | null
+          booking_reference: string | null
+          booking_source: string
           clinic_id: string
           created_at: string
           end_at: string
           id: string
+          manage_token_hash: string | null
           notes: string | null
           organization_id: string
           patient_id: string
@@ -250,12 +255,20 @@ export type Database = {
           status: string
           time_range: unknown
           updated_at: string
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
         }
         Insert: {
+          booking_idempotency_key?: string | null
+          booking_link_id?: string | null
+          booking_reference?: string | null
+          booking_source?: string
           clinic_id: string
           created_at?: string
           end_at: string
           id?: string
+          manage_token_hash?: string | null
           notes?: string | null
           organization_id: string
           patient_id: string
@@ -265,12 +278,20 @@ export type Database = {
           status?: string
           time_range?: unknown
           updated_at?: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
         }
         Update: {
+          booking_idempotency_key?: string | null
+          booking_link_id?: string | null
+          booking_reference?: string | null
+          booking_source?: string
           clinic_id?: string
           created_at?: string
           end_at?: string
           id?: string
+          manage_token_hash?: string | null
           notes?: string | null
           organization_id?: string
           patient_id?: string
@@ -280,8 +301,18 @@ export type Database = {
           status?: string
           time_range?: unknown
           updated_at?: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "appointments_booking_link_id_fkey"
+            columns: ["booking_link_id"]
+            isOneToOne: false
+            referencedRelation: "booking_links"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "appointments_clinic_fk"
             columns: ["clinic_id", "organization_id"]
@@ -414,6 +445,259 @@ export type Database = {
           },
         ]
       }
+      booking_links: {
+        Row: {
+          active: boolean
+          clinic_id: string
+          created_at: string
+          created_by: string | null
+          default_practitioner_id: string | null
+          default_service_id: string | null
+          id: string
+          name: string
+          organization_id: string
+          token: string
+          updated_at: string
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          active?: boolean
+          clinic_id: string
+          created_at?: string
+          created_by?: string | null
+          default_practitioner_id?: string | null
+          default_service_id?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          token: string
+          updated_at?: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          active?: boolean
+          clinic_id?: string
+          created_at?: string
+          created_by?: string | null
+          default_practitioner_id?: string | null
+          default_service_id?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          token?: string
+          updated_at?: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_links_clinic_fk"
+            columns: ["clinic_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "booking_links_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_links_default_practitioner_id_fkey"
+            columns: ["default_practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_links_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_links_service_fk"
+            columns: ["default_service_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id", "organization_id"]
+          },
+        ]
+      }
+      booking_rate_limits: {
+        Row: {
+          bucket_key: string
+          hits: number
+          window_start: string
+        }
+        Insert: {
+          bucket_key: string
+          hits?: number
+          window_start: string
+        }
+        Update: {
+          bucket_key?: string
+          hits?: number
+          window_start?: string
+        }
+        Relationships: []
+      }
+      clinic_booking_practitioners: {
+        Row: {
+          active: boolean
+          bio: string | null
+          clinic_id: string
+          created_at: string
+          display_name: string | null
+          id: string
+          organization_id: string
+          sort_order: number
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          bio?: string | null
+          clinic_id: string
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          organization_id: string
+          sort_order?: number
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          bio?: string | null
+          clinic_id?: string
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          organization_id?: string
+          sort_order?: number
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinic_booking_practitioners_clinic_fk"
+            columns: ["clinic_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "clinic_booking_practitioners_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinic_booking_practitioners_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clinic_booking_settings: {
+        Row: {
+          allow_any_practitioner: boolean
+          allow_cancellation: boolean
+          allow_rescheduling: boolean
+          clinic_id: string
+          confirmation_mode: string
+          created_at: string
+          id: string
+          manage_cutoff_hours: number
+          max_advance_days: number
+          min_notice_hours: number
+          online_booking_enabled: boolean
+          organization_id: string
+          primary_color: string | null
+          show_address: boolean
+          show_business_hours: boolean
+          show_email: boolean
+          show_phone: boolean
+          slot_interval_minutes: number
+          updated_at: string
+          welcome_message: string | null
+        }
+        Insert: {
+          allow_any_practitioner?: boolean
+          allow_cancellation?: boolean
+          allow_rescheduling?: boolean
+          clinic_id: string
+          confirmation_mode?: string
+          created_at?: string
+          id?: string
+          manage_cutoff_hours?: number
+          max_advance_days?: number
+          min_notice_hours?: number
+          online_booking_enabled?: boolean
+          organization_id: string
+          primary_color?: string | null
+          show_address?: boolean
+          show_business_hours?: boolean
+          show_email?: boolean
+          show_phone?: boolean
+          slot_interval_minutes?: number
+          updated_at?: string
+          welcome_message?: string | null
+        }
+        Update: {
+          allow_any_practitioner?: boolean
+          allow_cancellation?: boolean
+          allow_rescheduling?: boolean
+          clinic_id?: string
+          confirmation_mode?: string
+          created_at?: string
+          id?: string
+          manage_cutoff_hours?: number
+          max_advance_days?: number
+          min_notice_hours?: number
+          online_booking_enabled?: boolean
+          organization_id?: string
+          primary_color?: string | null
+          show_address?: boolean
+          show_business_hours?: boolean
+          show_email?: boolean
+          show_phone?: boolean
+          slot_interval_minutes?: number
+          updated_at?: string
+          welcome_message?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinic_booking_settings_clinic_fk"
+            columns: ["clinic_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "clinic_booking_settings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clinics: {
         Row: {
           address: string | null
@@ -421,10 +705,12 @@ export type Database = {
           deleted_at: string | null
           email: string | null
           id: string
+          logo_url: string | null
           name: string
           operating_hours: Json
           organization_id: string
           phone: string | null
+          slug: string | null
           status: string
           timezone: string
           updated_at: string
@@ -435,10 +721,12 @@ export type Database = {
           deleted_at?: string | null
           email?: string | null
           id?: string
+          logo_url?: string | null
           name: string
           operating_hours?: Json
           organization_id: string
           phone?: string | null
+          slug?: string | null
           status?: string
           timezone?: string
           updated_at?: string
@@ -449,10 +737,12 @@ export type Database = {
           deleted_at?: string | null
           email?: string | null
           id?: string
+          logo_url?: string | null
           name?: string
           operating_hours?: Json
           organization_id?: string
           phone?: string | null
+          slug?: string | null
           status?: string
           timezone?: string
           updated_at?: string
@@ -1994,8 +2284,11 @@ export type Database = {
           duration_minutes: number
           id: string
           name: string
+          online_booking_enabled: boolean
           organization_id: string
           price: number
+          public_description: string | null
+          public_name: string | null
           status: string
           updated_at: string
         }
@@ -2008,8 +2301,11 @@ export type Database = {
           duration_minutes: number
           id?: string
           name: string
+          online_booking_enabled?: boolean
           organization_id: string
           price?: number
+          public_description?: string | null
+          public_name?: string | null
           status?: string
           updated_at?: string
         }
@@ -2022,8 +2318,11 @@ export type Database = {
           duration_minutes?: number
           id?: string
           name?: string
+          online_booking_enabled?: boolean
           organization_id?: string
           price?: number
+          public_description?: string | null
+          public_name?: string | null
           status?: string
           updated_at?: string
         }
@@ -2211,6 +2510,10 @@ export type Database = {
         }
         Returns: string
       }
+      cancel_public_booking: {
+        Args: { p_client_key?: string; p_token: string }
+        Returns: Json
+      }
       consume_inventory_for_appointment: {
         Args: { p_appointment_id: string }
         Returns: {
@@ -2241,6 +2544,40 @@ export type Database = {
           p_org_name: string
         }
         Returns: string
+      }
+      create_public_booking: {
+        Args: {
+          p_client_key?: string
+          p_date_of_birth?: string
+          p_email?: string
+          p_first_name: string
+          p_idempotency_key?: string
+          p_last_name: string
+          p_link_token?: string
+          p_notes?: string
+          p_phone?: string
+          p_service_id: string
+          p_slug: string
+          p_staff_id?: string
+          p_start_at: string
+        }
+        Returns: Json
+      }
+      get_public_booking: { Args: { p_token: string }; Returns: Json }
+      get_public_booking_availability: {
+        Args: {
+          p_client_key?: string
+          p_days?: number
+          p_from?: string
+          p_service_id: string
+          p_slug: string
+          p_staff_id?: string
+        }
+        Returns: Json
+      }
+      get_public_booking_page: {
+        Args: { p_link_token?: string; p_slug: string }
+        Returns: Json
       }
       grant_user_role: {
         Args: {
@@ -2325,7 +2662,15 @@ export type Database = {
         Args: { p_amount: number; p_payment_id: string; p_reason: string }
         Returns: string
       }
+      reschedule_public_booking: {
+        Args: { p_client_key?: string; p_start_at: string; p_token: string }
+        Returns: Json
+      }
       revoke_user_role: { Args: { p_user_role_id: string }; Returns: undefined }
+      run_appointment_automation: {
+        Args: { p_appointment_id: string; p_trigger: string }
+        Returns: undefined
+      }
       set_membership_status: {
         Args: { p_membership_id: string; p_status: string }
         Returns: undefined

@@ -14,7 +14,6 @@ import {
   cancelScheduledReminders,
   dispatchAppointmentEvent,
   notifyUser,
-  type AppointmentContext,
   type AppointmentTriggerType,
 } from "@/lib/automation/dispatch";
 
@@ -40,13 +39,13 @@ type ActionResult = { error: string } | { error?: undefined };
 async function safeDispatch(
   supabase: Awaited<ReturnType<typeof getSupabaseServerClient>>,
   trigger: AppointmentTriggerType,
-  appointment: AppointmentContext,
+  appointmentId: string,
 ) {
   try {
-    await dispatchAppointmentEvent(supabase, trigger, appointment);
+    await dispatchAppointmentEvent(supabase, trigger, appointmentId);
   } catch (err) {
     console.error(
-      `[automation] dispatch failed for ${trigger} on appointment ${appointment.id}:`,
+      `[automation] dispatch failed for ${trigger} on appointment ${appointmentId}:`,
       err,
     );
   }
@@ -101,13 +100,7 @@ export async function createAppointmentAction(input: AppointmentFormInput): Prom
     return { error: error.code === OVERLAP_SQLSTATE ? DOUBLE_BOOKING_MESSAGE : error.message };
   }
 
-  await safeDispatch(supabase, "appointment.created", {
-    id: appointment.id,
-    organizationId,
-    clinicId: parsed.data.clinicId,
-    patientId: parsed.data.patientId,
-    startAt: startAt.toISOString(),
-  });
+  await safeDispatch(supabase, "appointment.created", appointment.id);
 
   revalidatePath("/calendar");
   revalidatePath("/appointments");
@@ -166,13 +159,7 @@ export async function rescheduleAppointmentAction(
   // exist for the 24h/2h reminders (migration 0014's seed), so this can
   // never duplicate the one-time booking confirmation.
   await cancelScheduledReminders(supabase, appointmentId);
-  await safeDispatch(supabase, "appointment.rescheduled", {
-    id: appointmentId,
-    organizationId,
-    clinicId: current.clinic_id,
-    patientId: current.patient_id,
-    startAt: newStartAt.toISOString(),
-  });
+  await safeDispatch(supabase, "appointment.rescheduled", appointmentId);
 
   // The receptionist/manager who rescheduled is never the practitioner
   // themselves -- appointments.reschedule isn't granted to the practitioner
@@ -266,13 +253,7 @@ export async function updateAppointmentStatusAction(
 
   const trigger = STATUS_TRIGGERS[status];
   if (trigger) {
-    await safeDispatch(supabase, trigger, {
-      id: data.id,
-      organizationId,
-      clinicId: data.clinic_id,
-      patientId: data.patient_id,
-      startAt: data.start_at,
-    });
+    await safeDispatch(supabase, trigger, data.id);
   }
 
   if (status === "no_show") {
