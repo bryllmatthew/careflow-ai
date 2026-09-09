@@ -4,12 +4,15 @@ import type { AppointmentStatus } from "@/lib/validation/appointment.schema";
 
 export const APPOINTMENTS_PAGE_SIZE = 20;
 
+/** How long an appointment counts as "New" after it was booked. */
+export const NEW_APPOINTMENT_WINDOW_MS = 60 * 60 * 1000;
+
 const APPOINTMENT_SELECT =
   "id, start_at, end_at, status, notes, clinic_id, clinics(name), " +
   "patient_id, patients(first_name, last_name), " +
   "staff_id, staff:profiles!appointments_staff_id_fkey(full_name, email), " +
   "service_id, services(name, duration_minutes, price), " +
-  "booking_source, booking_reference";
+  "booking_source, booking_reference, created_at";
 
 export type AppointmentRow = {
   id: string;
@@ -31,6 +34,19 @@ export type AppointmentRow = {
   bookingSource: string;
   /** The patient-facing "CF-XXXXXX" reference, for bookings made online. */
   bookingReference: string | null;
+  createdAt: string;
+  /**
+   * Booked within the last hour.
+   *
+   * Computed HERE, on the server, rather than in the table component: the
+   * table is a client component, so comparing against the browser's clock
+   * would make the server and client render disagree for an appointment
+   * sitting near the boundary, and React would flag the hydration mismatch.
+   * One clock, one answer. The consequence is that the tag ages out on the
+   * next page load rather than on a timer, which is the same freshness every
+   * other figure on the page has.
+   */
+  isNew: boolean;
 };
 
 type RawAppointment = {
@@ -49,6 +65,7 @@ type RawAppointment = {
   services: { name: string; duration_minutes: number; price: number } | null;
   booking_source: string;
   booking_reference: string | null;
+  created_at: string;
 };
 
 function mapAppointment(a: RawAppointment): AppointmentRow {
@@ -70,6 +87,8 @@ function mapAppointment(a: RawAppointment): AppointmentRow {
     servicePrice: a.services ? a.services.price.toFixed(2) : null,
     bookingSource: a.booking_source,
     bookingReference: a.booking_reference,
+    createdAt: a.created_at,
+    isNew: Date.now() - new Date(a.created_at).getTime() < NEW_APPOINTMENT_WINDOW_MS,
   };
 }
 

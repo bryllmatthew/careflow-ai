@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { AppointmentStatusBadge } from "@/components/patterns/appointment-status-badge";
+import { NewBadge } from "@/components/patterns/new-badge";
 import { FollowUpStatusBadge } from "@/components/patterns/followup-badges";
 import { Money } from "@/components/patterns/money";
 import { ConfirmDialog } from "@/components/patterns/confirm-dialog";
@@ -164,7 +165,10 @@ export function AppointmentDetailSheet({
         </SheetHeader>
 
         <div className="flex flex-col gap-4 overflow-y-auto px-4">
-          <AppointmentStatusBadge status={appointment.status} />
+          <div className="flex items-center gap-2">
+            <AppointmentStatusBadge status={appointment.status} />
+            {appointment.isNew && <NewBadge />}
+          </div>
 
           <dl className="grid grid-cols-3 gap-y-2 text-sm">
             <dt className="text-muted-foreground">Service</dt>

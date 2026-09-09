@@ -10,6 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { AppointmentStatusBadge } from "@/components/patterns/appointment-status-badge";
+import { NewBadge } from "@/components/patterns/new-badge";
 import { Money } from "@/components/patterns/money";
 import type { AppointmentRow } from "./queries";
 import { AppointmentDetailSheet } from "./appointment-detail-sheet";
@@ -52,7 +53,12 @@ export function AppointmentsTable({
                   timeStyle: "short",
                 }).format(new Date(a.startAt))}
               </TableCell>
-              <TableCell>{a.patientName}</TableCell>
+              <TableCell>
+                <span className="flex items-center gap-2">
+                  {a.patientName}
+                  {a.isNew && <NewBadge />}
+                </span>
+              </TableCell>
               <TableCell className="text-muted-foreground">{a.serviceName ?? "—"}</TableCell>
               <TableCell className="text-muted-foreground">{a.staffName ?? "—"}</TableCell>
               <TableCell className="text-muted-foreground">{a.clinicName ?? "—"}</TableCell>

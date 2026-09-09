@@ -46,8 +46,23 @@ export default async function BookingDashboardPage() {
           icon={Globe}
           tone={live > 0 ? "success" : "warning"}
         />
-        <StatTile label="Booked today" value={String(today)} icon={CalendarCheck} tone="primary" />
-        <StatTile label="Booked this week" value={String(week)} icon={TrendingUp} tone="info" />
+        {/* Both counts are appointments, so both drill through to the same
+            place. Making only one of two identical-looking tiles clickable
+            reads as a bug rather than a distinction. */}
+        <StatTile
+          label="Booked today"
+          value={String(today)}
+          icon={CalendarCheck}
+          tone="primary"
+          href="/appointments"
+        />
+        <StatTile
+          label="Booked this week"
+          value={String(week)}
+          icon={TrendingUp}
+          tone="info"
+          href="/appointments"
+        />
       </div>
 
       {clinics.length === 0 ? (
