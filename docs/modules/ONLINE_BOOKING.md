@@ -308,6 +308,42 @@ existing Phase 4 machinery, delivered by the existing `app/api/cron/process-remi
 
 ---
 
+## 8a. Telling the clinic
+
+A booking that arrives while nobody is watching the calendar is the core risk of putting a
+booking page on the internet — the clinic finds out when the patient turns up. Three things
+close that loop, all through machinery that already existed:
+
+| Surface | What it shows |
+| --- | --- |
+| Notification bell | One notification per staff member holding `appointments.view` for that clinic, for **booked / cancelled / rescheduled** |
+| Appointments nav badge | Count of online bookings still awaiting confirmation |
+| Appointment detail sheet | An `Online` chip and the `CF-XXXXXX` reference, shown only for patient-made bookings |
+
+Recipients come from `app.clinic_notify_targets(clinic, permission)` — the inverse of
+`app.permitted_clinics()`, which answers "which clinics may the current user touch" and is
+useless here because there is no current user. It applies the same membership-status rule, so a
+suspended member stops being notified at the exact moment they stop being able to open the
+appointment.
+
+`public.create_notification()` could not be reused: it requires `auth.uid()` and refuses an
+unauthenticated caller, which is precisely this caller. `app.notify_booking()` writes the same
+rows into the same table and is reachable only from inside the booking RPCs.
+
+The notice line renders in the **clinic's** timezone — "Ana Reyes · Dental Cleaning · Wed 09
+Sep, 1:00 PM". A notification that said 5:00 AM for a 1:00 PM appointment would be worse than
+none. The patient's name is included because every recipient already holds `appointments.view`
+for that clinic; withholding it would make the alert useless rather than safer.
+
+The badge counts **pending direct bookings**, not unread notifications, so it measures work
+still to do and clears when the clinic actually confirms. A clinic on `auto` confirmation mode
+never sees a badge, which is correct — nothing is waiting on them.
+
+Bookings are ordinary appointments, so they appear in `/appointments`, `/calendar`, the patient
+timeline and every report with no filtering change anywhere.
+
+---
+
 ## 9. Multi-tenant isolation
 
 Every public function derives the organization and clinic from the slug or from the

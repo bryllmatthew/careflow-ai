@@ -3,6 +3,7 @@ import { getAuthContext } from "@/lib/auth/session";
 import { getPermissionSet } from "@/lib/auth/require-permission";
 import { ALL_NAV_ITEMS } from "@/lib/navigation";
 import { AppShell } from "@/components/layout/app-shell";
+import { getPendingOnlineBookingCount } from "./booking/queries";
 
 /**
  * The authenticated shell for every real feature route. Frontend permission
@@ -41,9 +42,17 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
     return required.some((p) => permissions.has(p));
   }).map((item) => item.href);
 
+  // Online bookings still waiting for the clinic to confirm them. Only fetched
+  // for someone who can actually see appointments -- a badge pointing at a page
+  // the user cannot open would be noise, and the query would return 0 anyway.
+  const pendingOnlineBookings = permissions.has("appointments.view")
+    ? await getPendingOnlineBookingCount(currentOrg.organizationId)
+    : 0;
+
   return (
     <AppShell
       visibleHrefs={visibleHrefs}
+      navBadges={pendingOnlineBookings > 0 ? { "/appointments": pendingOnlineBookings } : {}}
       organizationName={currentOrg.organizationName}
       userEmail={auth.email ?? ""}
     >

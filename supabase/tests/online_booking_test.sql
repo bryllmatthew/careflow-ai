@@ -14,7 +14,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(38);
+select plan(43);
 
 -- ---------------------------------------------------------------- fixture --
 
@@ -25,7 +25,12 @@ values
   ('00000000-0000-0000-0000-0000000000b1', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
    'owner-a@booking.test', 'x', now(), now(), now(), '', '', '', ''),
   ('00000000-0000-0000-0000-0000000000b2', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
-   'owner-b@booking.test', 'x', now(), now(), now(), '', '', '', '');
+   'owner-b@booking.test', 'x', now(), now(), now(), '', '', '', ''),
+  -- Deliberately NOT an all-zero-version UUID: this one exists to prove the
+  -- notification fan-out excludes people, and a second id shape here would
+  -- confuse that with an id-parsing problem.
+  ('00000000-0000-0000-0000-0000000000b3', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
+   'stockkeeper-a@booking.test', 'x', now(), now(), now(), '', '', '', '');
 
 insert into public.organizations (id, name, timezone) values
   ('00000000-0000-0000-0000-00000000a000', 'Booking Org A', 'Asia/Manila'),
@@ -33,7 +38,8 @@ insert into public.organizations (id, name, timezone) values
 
 insert into public.organization_memberships (organization_id, user_id, status) values
   ('00000000-0000-0000-0000-00000000a000', '00000000-0000-0000-0000-0000000000b1', 'active'),
-  ('00000000-0000-0000-0000-00000000b000', '00000000-0000-0000-0000-0000000000b2', 'active');
+  ('00000000-0000-0000-0000-00000000b000', '00000000-0000-0000-0000-0000000000b2', 'active'),
+  ('00000000-0000-0000-0000-00000000a000', '00000000-0000-0000-0000-0000000000b3', 'active');
 
 insert into public.user_roles (user_id, role_id, organization_id, clinic_id)
 select '00000000-0000-0000-0000-0000000000b1', id, '00000000-0000-0000-0000-00000000a000', null
@@ -41,6 +47,11 @@ select '00000000-0000-0000-0000-0000000000b1', id, '00000000-0000-0000-0000-0000
 insert into public.user_roles (user_id, role_id, organization_id, clinic_id)
 select '00000000-0000-0000-0000-0000000000b2', id, '00000000-0000-0000-0000-00000000b000', null
   from public.roles where organization_id is null and key = 'owner';
+-- An Org A member with no appointments.view: inventory_manager holds stock and
+-- reporting permissions and nothing scheduling-related (migration 0002).
+insert into public.user_roles (user_id, role_id, organization_id, clinic_id)
+select '00000000-0000-0000-0000-0000000000b3', id, '00000000-0000-0000-0000-00000000a000', null
+  from public.roles where organization_id is null and key = 'inventory_manager';
 
 -- Open every day, so the tests never depend on which weekday they run on.
 insert into public.clinics (id, organization_id, name, slug, timezone, operating_hours) values
@@ -229,7 +240,7 @@ select is(
     p_slug => 'clinic-a', p_service_id => '00000000-0000-0000-0000-00000000a002',
     p_start_at => (select slot_at from t_fixture),
     p_first_name => 'Ana', p_last_name => 'Reyes',
-    p_phone => '0917 555 1234', p_email => 'ana@booking.test',
+    p_phone => '0999 111 2222', p_email => 'ana@booking.test',
     p_idempotency_key => 'idem-a-1', p_client_key => 'ok-1') ->> 'ok',
   'true',
   'a valid booking succeeds');
@@ -238,7 +249,7 @@ select is(
   public.create_public_booking(
     p_slug => 'clinic-a', p_service_id => '00000000-0000-0000-0000-00000000a002',
     p_start_at => (select slot_at from t_fixture),
-    p_first_name => 'Ana', p_last_name => 'Reyes', p_phone => '0917 555 1234',
+    p_first_name => 'Ana', p_last_name => 'Reyes', p_phone => '0999 111 2222',
     p_idempotency_key => 'idem-a-1', p_client_key => 'ok-1') ->> 'duplicate',
   'true',
   'the same idempotency key returns the original booking, never a second one');
@@ -292,14 +303,14 @@ select ok(
 select is(
   (select count(*)::int from public.patients
     where clinic_id = '00000000-0000-0000-0000-00000000a001'
-      and phone = '0917 555 1234'),
+      and phone = '0999 111 2222'),
   1,
   'exactly one patient row was created for the booking');
 
 select is(
   (select count(*)::int from public.patients
     where organization_id <> '00000000-0000-0000-0000-00000000a000'
-      and phone = '0917 555 1234'),
+      and phone = '0999 111 2222'),
   0,
   'the patient was not created in, or matched against, any other organization');
 
@@ -309,6 +320,48 @@ select is(
       and organization_id = '00000000-0000-0000-0000-00000000a000'),
   1,
   'the public booking is audited, with no user_id to invent');
+
+-- ================================================ staff notifications (0022) ==
+--
+-- A booking nobody is told about is the core risk of a public booking page.
+-- These assert both halves: the right people are told, and the wrong people
+-- are not.
+
+select is(
+  (select count(*)::int from public.notifications
+    where type = 'online_booking_created'
+      and organization_id = '00000000-0000-0000-0000-00000000a000'),
+  1,
+  'a public booking notifies exactly the one Org A member holding appointments.view');
+
+select is(
+  (select user_id from public.notifications
+    where type = 'online_booking_created'
+      and organization_id = '00000000-0000-0000-0000-00000000a000'),
+  '00000000-0000-0000-0000-0000000000b1'::uuid,
+  'the notification goes to the owner, who can open the appointment');
+
+select is(
+  (select count(*)::int from public.notifications
+    where type = 'online_booking_created'
+      and user_id = '00000000-0000-0000-0000-0000000000b3'),
+  0,
+  'a member without appointments.view is NOT told about the booking');
+
+select is(
+  (select count(*)::int from public.notifications
+    where organization_id = '00000000-0000-0000-0000-00000000b000'),
+  0,
+  'no notification crosses into the other organization');
+
+-- The notice line is what a staff member actually reads, so it must carry the
+-- appointment in the CLINIC's timezone -- 10:00 Manila, never 02:00 UTC.
+select ok(
+  (select message like '%Ana Reyes%' and message like '%10:00 AM%'
+     from public.notifications
+    where type = 'online_booking_created'
+      and organization_id = '00000000-0000-0000-0000-00000000a000'),
+  'the notification names the patient and the clinic-local time');
 
 select * from finish();
 rollback;

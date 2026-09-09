@@ -28,10 +28,12 @@ export function Topbar({
   organizationName,
   userEmail,
   visibleHrefs,
+  navBadges,
 }: {
   organizationName: string;
   userEmail: string;
   visibleHrefs: string[];
+  navBadges?: Record<string, number>;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -48,7 +50,11 @@ export function Topbar({
           <SheetHeader className="border-b px-4 py-3">
             <SheetTitle className="text-left text-sm font-semibold">CareFlow AI</SheetTitle>
           </SheetHeader>
-          <SidebarNav visibleHrefs={visibleHrefs} onNavigate={() => setMobileOpen(false)} />
+          <SidebarNav
+            visibleHrefs={visibleHrefs}
+            badges={navBadges}
+            onNavigate={() => setMobileOpen(false)}
+          />
         </SheetContent>
       </Sheet>
 

@@ -16,7 +16,15 @@ import { submitPublicBookingAction, fetchAvailabilityAction } from "./actions";
 
 const ANY_PRACTITIONER = "any";
 
-type Step = "service" | "practitioner" | "time" | "details" | "done";
+/**
+ * "done" is deliberately NOT a step. The confirmation renders whenever a
+ * `confirmation` object exists, so the screen cannot disagree with the data
+ * backing it. The first version had a "done" step AND a confirmation object
+ * and required both -- the submit handler set only the object, so the
+ * confirmation screen was unreachable and a patient whose booking had just
+ * succeeded was left looking at a form React 19 had helpfully blanked.
+ */
+type Step = "service" | "practitioner" | "time" | "details";
 
 type Confirmation = {
   reference: string;
@@ -89,7 +97,7 @@ export function BookingFlow({
     [tz],
   );
 
-  if (step === "done" && confirmation) {
+  if (confirmation) {
     return (
       <BookingConfirmed
         page={page}

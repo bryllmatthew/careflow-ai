@@ -16,9 +16,12 @@ import { NAVIGATION } from "@/lib/navigation";
  */
 export function SidebarNav({
   visibleHrefs,
+  badges,
   onNavigate,
 }: {
   visibleHrefs: string[];
+  /** href -> outstanding-item count, rendered as a chip on the item. */
+  badges?: Record<string, number>;
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
@@ -40,6 +43,7 @@ export function SidebarNav({
             {section.items.map((item) => {
               const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
               const Icon = item.icon;
+              const badge = badges?.[item.href] ?? 0;
               return (
                 <Link
                   key={item.href}
@@ -54,7 +58,16 @@ export function SidebarNav({
                   )}
                 >
                   <Icon className="size-4 shrink-0" aria-hidden />
-                  {item.title}
+                  <span className="flex-1 truncate">{item.title}</span>
+                  {badge > 0 && (
+                    /* The count is inside the link's accessible name via the
+                       sr-only text, so a screen reader hears "Appointments, 3
+                       awaiting confirmation" rather than a bare number. */
+                    <span className="bg-tint-warning text-tint-warning-foreground ml-auto flex min-w-5 shrink-0 items-center justify-center rounded-full px-1.5 py-0.5 text-[0.6875rem] font-semibold tabular-nums">
+                      {badge > 99 ? "99+" : badge}
+                      <span className="sr-only"> awaiting confirmation</span>
+                    </span>
+                  )}
                 </Link>
               );
             })}

@@ -388,3 +388,30 @@ export async function getOnlineBookingMetrics(
     })),
   };
 }
+
+/**
+ * How many online bookings are sitting unconfirmed, for the badge on the
+ * Appointments nav item.
+ *
+ * "Pending direct bookings" rather than "unread notifications" on purpose: it
+ * is a count of work still to do, so it clears when the clinic actually
+ * confirms the appointments rather than when someone glances at an inbox. A
+ * clinic on `auto` confirmation mode therefore never sees a badge, which is
+ * correct -- nothing is waiting on them.
+ *
+ * Deliberately unfiltered by clinic: RLS already limits the rows to clinics
+ * the caller may see, so the badge counts exactly the bookings this user could
+ * open (docs/modules/REPORTING.md's "aggregation security is a property of the
+ * existing SELECT policies").
+ */
+export async function getPendingOnlineBookingCount(organizationId: string): Promise<number> {
+  const supabase = await getSupabaseServerClient();
+  const { count } = await supabase
+    .from("appointments")
+    .select("id", { count: "exact", head: true })
+    .eq("organization_id", organizationId)
+    .eq("booking_source", "direct_booking")
+    .eq("status", "pending");
+
+  return count ?? 0;
+}

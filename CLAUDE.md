@@ -281,6 +281,24 @@ Recorded so the code and docs stop contradicting each other:
   is the only place a counter can be shared between concurrent requests. The client key is a
   SHA-256 of the forwarded IP, never the IP itself. With no forwarded address the limiter
   fails open — it is a throttle, not an authorization check.
+- **Ids in `lib/validation/booking.schema.ts` use a `uuidLike` regex, never Zod's `z.uuid()`.**
+  Zod 4's `z.uuid()` enforces the RFC 4122 version and variant bits, but the Postgres `uuid`
+  type accepts any 128-bit value — and this app is full of them: every seeded staff account
+  has an id like `00000000-0000-0000-0000-0000000000a1`. Validating more strictly than the
+  database rejects rows that are already stored. This shipped once and made the entire
+  practitioner list unpublishable ("Invalid UUID"), which then surfaced on the public page as
+  "Online booking isn't set up yet". Every other schema in `lib/validation/` uses a plain
+  `z.string().min(1)` for ids for the same reason.
+- **A public booking notifies clinic staff through the existing per-user notifications inbox**
+  (migration 0022), gated on `appointments.view` so the alert and the row it links to are
+  governed by one permission. It cannot use `public.create_notification()` — that RPC requires
+  `auth.uid()`, and the booking path has no caller — so `app.notify_booking()` writes the same
+  rows from inside the definer function. Patient-initiated cancellation and reschedule notify
+  too: a patient silently cancelling is worse for a clinic than one silently booking.
+- **The Appointments nav badge counts unconfirmed online bookings, not unread notifications.**
+  It is a count of outstanding work, so it clears when the clinic confirms the appointments
+  rather than when someone glances at an inbox — and a clinic on `auto` confirmation mode
+  correctly never sees a badge, because nothing is waiting on them.
 - **`vercel.json`'s cron schedules run once daily, not every 15 minutes / hourly**, on the deployed
   Vercel Hobby (free) plan, which caps cron frequency at once per day — a platform constraint, not a
   design choice. This means `reminder_24h`/`reminder_2h` reminders and overdue-invoice detection are

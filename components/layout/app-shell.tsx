@@ -4,12 +4,15 @@ import { Topbar } from "./topbar";
 
 export function AppShell({
   visibleHrefs,
+  navBadges,
   organizationName,
   userEmail,
   children,
 }: {
   /** hrefs of nav items the current user may see, computed server-side by permission. */
   visibleHrefs: string[];
+  /** href -> count, for nav items with outstanding work (e.g. unconfirmed online bookings). */
+  navBadges?: Record<string, number>;
   organizationName: string;
   userEmail: string;
   children: ReactNode;
@@ -26,7 +29,7 @@ export function AppShell({
           <span className="bg-primary size-2.5 rounded-full" aria-hidden />
           CareFlow AI
         </div>
-        <SidebarNav visibleHrefs={visibleHrefs} />
+        <SidebarNav visibleHrefs={visibleHrefs} badges={navBadges} />
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col gap-3">
@@ -34,6 +37,7 @@ export function AppShell({
           organizationName={organizationName}
           userEmail={userEmail}
           visibleHrefs={visibleHrefs}
+          navBadges={navBadges}
         />
         <main className="min-h-0 flex-1 overflow-y-auto pb-2">{children}</main>
       </div>
