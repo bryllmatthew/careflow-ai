@@ -299,6 +299,30 @@ Recorded so the code and docs stop contradicting each other:
   It is a count of outstanding work, so it clears when the clinic confirms the appointments
   rather than when someone glances at an inbox — and a clinic on `auto` confirmation mode
   correctly never sees a badge, because nothing is waiting on them.
+- **Clinic type lives on `clinics.clinic_type`, not only the organization.** One organization
+  can run a dental branch and an aesthetic one, and the clinic is where clinical work happens.
+  `organizations.business_type` stays as the sign-up answer and the default for new clinics;
+  nothing gates on it. Specialty modules are switched on by a single capability registry
+  (`app.clinic_type_has_capability()`, mirrored by `lib/clinic-types.ts`) — one capability per
+  whole module (`"dental"`), not per-feature flags. See `docs/modules/DENTAL.md`.
+- **The dental module uses three permissions (`dental.view`, `dental.record`,
+  `dental.complete`), not the brief's eight**, and the receptionist gets none by default —
+  same coarse-grain reasoning as Phases 7 and 10, plus least privilege on a clinical record.
+- **Dental access follows the patient's clinic, not the user's.** There is no active-clinic
+  switcher; a user with a dental and an aesthetic branch sees charts only on the dental
+  branch's patients.
+- **Teeth are keyed by ISO 3950 (FDI) code**; Universal numbering is derived for display, so
+  switching `clinics.tooth_numbering` rewrites nothing.
+- **Completing a treatment never resolves an existing finding.** It only writes the
+  treatment's declared `resulting_condition`; whether the caries is gone is the dentist's
+  explicit call. Dental records have no `DELETE` and no `deleted_at` — they are corrected via
+  `entered_in_error` (with a reason) and stay in the history.
+- **A clinic holding dental records cannot be re-typed as non-dental** (trigger) — RLS
+  requires the capability, so re-typing would orphan the patients' dental history.
+- **The treatment dialog applies one surface set to every selected tooth, and a plan's teeth
+  are fixed once planned** (cancel and re-plan). The data model stores surfaces per tooth; the
+  UI covers the common case.
+- **No AI dental tool yet**; any future one is read-only and never diagnoses.
 - **`vercel.json`'s cron schedules run once daily, not every 15 minutes / hourly**, on the deployed
   Vercel Hobby (free) plan, which caps cron frequency at once per day — a platform constraint, not a
   design choice. This means `reminder_24h`/`reminder_2h` reminders and overdue-invoice detection are

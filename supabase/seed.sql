@@ -117,8 +117,10 @@ begin
   v_org_id := public.create_organization('CareFlow Demo Clinic', 'dental', 'Davao Branch');
   select id into v_clinic1_id from public.clinics where organization_id = v_org_id order by created_at limit 1;
 
-  insert into public.clinics (organization_id, name, address, timezone, status)
-  values (v_org_id, 'Cebu Branch', '123 IT Park, Cebu City', 'Asia/Manila', 'active')
+  -- Cebu is an AESTHETIC branch of a dental organization: the demo shows a
+  -- mixed-type organization, and that the dental chart follows the clinic.
+  insert into public.clinics (organization_id, name, address, timezone, status, clinic_type)
+  values (v_org_id, 'Cebu Branch', '123 IT Park, Cebu City', 'Asia/Manila', 'active', 'aesthetic')
   returning id into v_clinic2_id;
 
   -- --------------------------------------------------------------------------
@@ -350,6 +352,65 @@ begin
     v_org_id, v_clinic1_id, 'Facebook — cleaning promo', 'fbcleaning2026',
     v_service_cleaning_id, 'facebook', 'paid', 'cleaning-promo', v_admin_id
   );
+
+  -- --------------------------------------------------------------------------
+  -- Dental chart for Juan (Davao Branch is a dental clinic). Written through
+  -- the same RPCs the app uses, acting as the practitioner so every record is
+  -- signed by the dentist rather than the admin.
+  -- --------------------------------------------------------------------------
+  perform set_config('request.jwt.claims',
+    json_build_object('sub', v_practitioner_id, 'role', 'authenticated')::text, false);
+
+  perform public.dental_record_conditions(v_patient_juan_id, array[18, 28]::smallint[], 'missing');
+  perform public.dental_record_conditions(v_patient_juan_id, array[46]::smallint[], 'crown',
+    '{}', 'Porcelain-fused-to-metal crown, placed at a previous clinic.');
+  perform public.dental_record_conditions(v_patient_juan_id, array[48]::smallint[], 'impacted',
+    '{}', 'Partially erupted. Monitor; refer if symptomatic.');
+  perform public.dental_record_conditions(v_patient_juan_id, array[36]::smallint[], 'caries',
+    array['occlusal', 'distal'], 'Sensitive to cold.');
+
+  -- Performed: a restoration on 14 (charts the tooth as restored).
+  perform public.dental_plan_treatment(v_patient_juan_id, 'Composite restoration',
+    '[{"tooth_code": 14, "surfaces": ["mesial", "occlusal"]}]'::jsonb,
+    p_resulting_condition => 'restoration', p_complete_now => true);
+
+  -- Planned, and scheduled into Juan's appointment tomorrow.
+  perform public.dental_plan_treatment(v_patient_juan_id, 'Composite restoration',
+    '[{"tooth_code": 36, "surfaces": ["occlusal", "distal"]}]'::jsonb,
+    p_appointment_id => (select id from public.appointments
+                          where patient_id = v_patient_juan_id and start_at > v_now
+                          order by start_at limit 1),
+    p_resulting_condition => 'restoration');
+
+  -- Planned, not yet scheduled.
+  perform public.dental_plan_treatment(v_patient_juan_id, 'Surgical extraction',
+    '[{"tooth_code": 48}]'::jsonb,
+    p_resulting_condition => 'extracted', p_notes => 'Refer to oral surgeon if roots are curved.');
+
+  -- Spread the chart over time so its history reads like a real patient's,
+  -- not one afternoon. Demo data only: the guards stamp every live record
+  -- with now(), so they (and the audit triggers) are paused for this backdate.
+  alter table public.dental_conditions disable trigger user;
+  alter table public.dental_treatments disable trigger user;
+
+  update public.dental_conditions set noted_at = v_now - interval '120 days'
+   where patient_id = v_patient_juan_id and condition in ('missing', 'crown', 'impacted');
+  update public.dental_conditions set noted_at = v_now - interval '14 days'
+   where patient_id = v_patient_juan_id and condition = 'caries';
+
+  update public.dental_treatments
+     set planned_at = v_now - interval '42 days', completed_at = v_now - interval '35 days'
+   where patient_id = v_patient_juan_id and status = 'completed';
+  update public.dental_conditions set noted_at = v_now - interval '35 days'
+   where patient_id = v_patient_juan_id and source_treatment_id is not null;
+  update public.dental_treatments set planned_at = v_now - interval '14 days'
+   where patient_id = v_patient_juan_id and status in ('planned', 'scheduled');
+
+  alter table public.dental_conditions enable trigger user;
+  alter table public.dental_treatments enable trigger user;
+
+  perform set_config('request.jwt.claims',
+    json_build_object('sub', v_admin_id, 'role', 'authenticated')::text, false);
 
   raise notice 'Seed complete: organization %, clinics % / %, staff % / %',
     v_org_id, v_clinic1_id, v_clinic2_id, v_practitioner_id, v_receptionist_id;

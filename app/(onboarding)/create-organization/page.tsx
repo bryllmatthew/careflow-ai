@@ -47,10 +47,13 @@ export default function CreateOrganizationPage() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label htmlFor="businessType">Business type</Label>
-            <Select name="businessType" defaultValue="other">
+            <Label htmlFor="businessType">Clinic type</Label>
+            {/* No default: this switches specialty tools on (dental charting
+                for a dental clinic), so it should be chosen, not skipped
+                into "Other". */}
+            <Select name="businessType" required>
               <SelectTrigger id="businessType" className="w-full">
-                <SelectValue />
+                <SelectValue placeholder="Choose your clinic type" />
               </SelectTrigger>
               <SelectContent>
                 {businessTypes.map((type) => (
@@ -60,6 +63,10 @@ export default function CreateOrganizationPage() {
                 ))}
               </SelectContent>
             </Select>
+            <p className="text-muted-foreground text-sm">
+              Turns on tools made for your kind of practice — dental clinics get tooth charting, for
+              example. Each clinic you add later can have its own type.
+            </p>
             {state.fieldErrors?.businessType && (
               <p className="text-destructive text-sm">{state.fieldErrors.businessType[0]}</p>
             )}

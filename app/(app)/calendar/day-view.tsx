@@ -49,6 +49,7 @@ export function DayView({
   canUpdate,
   canCancel,
   canReschedule,
+  canViewDental = false,
 }: {
   date: string;
   clinicId?: string;
@@ -66,6 +67,7 @@ export function DayView({
   canUpdate: boolean;
   canCancel: boolean;
   canReschedule: boolean;
+  canViewDental?: boolean;
 }) {
   const [selected, setSelected] = useState<AppointmentRow | null>(null);
   const [booking, setBooking] = useState<{ time: string; staffId: string } | null>(null);
@@ -166,6 +168,7 @@ export function DayView({
         canUpdate={canUpdate}
         canCancel={canCancel}
         canReschedule={canReschedule}
+        canViewDental={canViewDental}
       />
 
       <AppointmentFormDialog

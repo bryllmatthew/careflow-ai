@@ -8,7 +8,7 @@ export const APPOINTMENTS_PAGE_SIZE = 20;
 export const NEW_APPOINTMENT_WINDOW_MS = 60 * 60 * 1000;
 
 const APPOINTMENT_SELECT =
-  "id, start_at, end_at, status, notes, clinic_id, clinics(name), " +
+  "id, start_at, end_at, status, notes, clinic_id, clinics(name, clinic_type), " +
   "patient_id, patients(first_name, last_name), " +
   "staff_id, staff:profiles!appointments_staff_id_fkey(full_name, email), " +
   "service_id, services(name, duration_minutes, price), " +
@@ -22,6 +22,8 @@ export type AppointmentRow = {
   notes: string | null;
   clinicId: string;
   clinicName: string | null;
+  /** Decides which specialty actions the appointment offers (lib/clinic-types.ts). */
+  clinicType: string | null;
   patientId: string;
   patientName: string;
   staffId: string;
@@ -56,7 +58,7 @@ type RawAppointment = {
   status: string;
   notes: string | null;
   clinic_id: string;
-  clinics: { name: string } | null;
+  clinics: { name: string; clinic_type: string } | null;
   patient_id: string;
   patients: { first_name: string; last_name: string } | null;
   staff_id: string;
@@ -77,6 +79,7 @@ function mapAppointment(a: RawAppointment): AppointmentRow {
     notes: a.notes,
     clinicId: a.clinic_id,
     clinicName: a.clinics?.name ?? null,
+    clinicType: a.clinics?.clinic_type ?? null,
     patientId: a.patient_id,
     patientName: a.patients ? `${a.patients.first_name} ${a.patients.last_name}` : "Unknown",
     staffId: a.staff_id,

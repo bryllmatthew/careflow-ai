@@ -3,13 +3,14 @@
 import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Circle, XCircle, AlertTriangle, Receipt } from "lucide-react";
+import { CheckCircle2, Circle, XCircle, AlertTriangle, Receipt, Smile } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { clinicHasCapability } from "@/lib/clinic-types";
 import { AppointmentStatusBadge } from "@/components/patterns/appointment-status-badge";
 import { NewBadge } from "@/components/patterns/new-badge";
 import { FollowUpStatusBadge } from "@/components/patterns/followup-badges";
@@ -62,6 +63,7 @@ export function AppointmentDetailSheet({
   canCancel,
   canReschedule,
   canCreateInvoice = false,
+  canViewDental = false,
 }: {
   appointment: AppointmentRow | null;
   onOpenChange: (open: boolean) => void;
@@ -70,6 +72,11 @@ export function AppointmentDetailSheet({
   canReschedule: boolean;
   /** Optional -- defaults to hidden. Not every list this sheet is used from checks invoices.create. */
   canCreateInvoice?: boolean;
+  /**
+   * Whether to offer the dental chart. Also requires the appointment's clinic
+   * to be a dental clinic; the chart page re-checks permission per clinic.
+   */
+  canViewDental?: boolean;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -333,6 +340,19 @@ export function AppointmentDetailSheet({
         </div>
 
         <SheetFooter>
+          {/* Spec section 9: treatment is charted against the appointment it
+              happened in. The chart opens with this appointment pre-linked, so
+              anything planned or recorded there carries appointment_id. */}
+          {canViewDental && clinicHasCapability(appointment.clinicType, "dental") && (
+            <Button variant="outline" size="sm" asChild>
+              <Link
+                href={`/patients/${appointment.patientId}?tab=dental&appointment=${appointment.id}`}
+              >
+                <Smile className="size-4" aria-hidden />
+                Dental chart
+              </Link>
+            </Button>
+          )}
           {canCreateInvoice && (
             <Button
               variant="outline"

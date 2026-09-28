@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CLINIC_TYPES, TOOTH_NUMBERING_SYSTEMS } from "@/lib/clinic-types";
 
 const optionalText = (max: number) =>
   z
@@ -23,5 +24,9 @@ export const clinicFormSchema = z.object({
   // a library dependency for one form field); a bad value fails harmlessly
   // at display/scheduling time in a later phase, not silently or unsafely.
   timezone: z.string().trim().min(1, "Timezone is required").max(100),
+  // Drives which specialty modules this clinic gets (lib/clinic-types.ts).
+  clinicType: z.enum(CLINIC_TYPES, { error: "Choose a clinic type" }),
+  // Display preference only; dental records are stored by ISO 3950 code.
+  toothNumbering: z.enum(TOOTH_NUMBERING_SYSTEMS),
 });
 export type ClinicFormInput = z.infer<typeof clinicFormSchema>;

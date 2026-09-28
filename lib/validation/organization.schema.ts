@@ -1,30 +1,23 @@
 import { z } from "zod";
+import { CLINIC_TYPES } from "@/lib/clinic-types";
 
 /**
- * Mirrors the CHECK constraint on organizations.business_type
- * (supabase/migrations/20260903072153_tenancy_core.sql).
+ * The organization's type at sign-up is the clinic type of its first clinic
+ * (create_organization(), migration 0024) and the default for clinics added
+ * later. The list itself lives in lib/clinic-types.ts, the one place clinic
+ * types and their capabilities are defined.
  */
-export const businessTypes = [
-  "dental",
-  "medical",
-  "therapy",
-  "aesthetic",
-  "wellness",
-  "other",
-] as const;
-
-export const businessTypeLabels: Record<(typeof businessTypes)[number], string> = {
-  dental: "Dental",
-  medical: "Medical",
-  therapy: "Therapy",
-  aesthetic: "Aesthetic",
-  wellness: "Wellness",
-  other: "Other",
-};
+export {
+  CLINIC_TYPES as businessTypes,
+  CLINIC_TYPE_LABELS as businessTypeLabels,
+} from "@/lib/clinic-types";
 
 export const createOrganizationSchema = z.object({
   orgName: z.string().trim().min(1, "Organization name is required").max(200),
-  businessType: z.enum(businessTypes),
+  // Required, with no default: the clinic type switches specialty modules on
+  // and off, so it is a decision the clinic makes rather than a value it
+  // inherits by skipping a field.
+  businessType: z.enum(CLINIC_TYPES, { error: "Choose your clinic type" }),
   clinicName: z.string().trim().max(200).optional(),
 });
 export type CreateOrganizationInput = z.infer<typeof createOrganizationSchema>;

@@ -533,3 +533,30 @@ its own clinic record. Patients book without an account.
 Not in this phase: the CareFlow public marketplace, clinic discovery, reviews, marketplace
 payments, deposits at booking time, and autonomous AI booking. See
 `docs/modules/ONLINE_BOOKING.md` for the deferrals and their reasons.
+
+---
+
+## Clinic types and the Dental module (shipped)
+
+Full detail: `docs/modules/DENTAL.md`.
+
+**Clinic type.** Sign-up now requires choosing a clinic type (Dental, Medical, Aesthetic,
+Therapy / Rehabilitation, Wellness, Other). Each clinic carries its own type, because one
+organization may run different kinds of branches; the organization's sign-up choice is the
+default for new clinics. The type switches specialty modules on through a central capability
+registry — never through scattered type checks.
+
+**Dental module** (dental clinics only):
+
+- Interactive odontogram of the permanent dentition, FDI or Universal numbering per clinic.
+- Select one or several teeth; record findings per tooth and surface (mesial, distal,
+  buccal/facial, lingual/palatal, occlusal, incisal).
+- Findings: caries, restoration, crown, bridge, implant, root canal treated, missing,
+  extracted, impacted, for extraction, under observation, other.
+- Treatment planning: planned → scheduled (linked to an appointment) → completed (explicit
+  sign-off), or cancelled. An appointment never marks treatment done by itself.
+- A completed treatment can chart its result on the tooth (e.g. extraction → extracted).
+- Patient-level Dental History and per-tooth history; nothing is deleted — mistakes are
+  marked "entered in error" and stay visible.
+- Opens from an appointment ("Dental chart"), pre-linking work to that visit.
+- Clinical staff only by default: receptionist, finance and inventory roles have no access.

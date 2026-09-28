@@ -449,3 +449,30 @@ UPDATE grants that keep tenancy columns immutable.
 on the appointment it manages), and `clinic_branding` (two columns on `clinics`). Each would
 have been a side table expressing a 1:1 relationship the existing row already has. See
 `docs/modules/ONLINE_BOOKING.md`.
+
+## Clinic type and dental additions
+
+### New columns on existing tables
+
+- `clinics.clinic_type` — `dental|medical|aesthetic|therapy|wellness|other`, default `other`;
+  backfilled from `organizations.business_type`. A trigger refuses re-typing a clinic that
+  holds dental records to a non-dental type.
+- `clinics.tooth_numbering` — `fdi|universal`, default `fdi`. Display only.
+
+### New tables
+
+| Table | Purpose |
+| --- | --- |
+| `dental_teeth` | Static reference: 32 permanent teeth keyed by ISO 3950 code (`code smallint` PK), with arch, side, position, class, name, derived Universal number. |
+| `dental_conditions` | A finding on one tooth: `tooth_code`, `surfaces`, `condition`, `status` (`present|resolved|entered_in_error`), notes, `source_treatment_id`, `noted_at/by`, `closed_at/by`, `status_reason`. |
+| `dental_treatments` | A procedure: `procedure`, `service_id`, `appointment_id`, `practitioner_id`, `resulting_condition`, `status` (`planned|scheduled|completed|cancelled|entered_in_error`), planned/completed/closed stamps. |
+| `dental_treatment_teeth` | Teeth (and surfaces) a treatment covers — `unique (treatment_id, tooth_code)`. |
+
+All clinic-scoped dental tables carry `organization_id` + `clinic_id NOT NULL` with composite
+FKs to `clinics` and `patients`; the treatment's appointment and service FKs are composite
+too, and triggers enforce same-patient appointments and same-clinic services.
+
+Domains: `dental_condition_code`, `dental_surface_set` (text + CHECK, per convention).
+
+**No `DELETE`** is granted on any dental table, and no `deleted_at` column exists: clinical
+records are corrected (`entered_in_error`) or closed (`resolved`/`cancelled`), never removed.

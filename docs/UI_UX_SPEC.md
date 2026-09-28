@@ -251,3 +251,23 @@ Use:
 - Sufficient contrast
 - Screen-reader friendly components
 - Clear validation messages
+---
+
+# Dental Chart (dental clinics)
+
+Patient profile gains **Dental Chart** and **Dental History** tabs after Overview, only when
+the patient's clinic is dental and the viewer holds `dental.view`.
+
+- **Chart tab** — odontogram card (upper and lower arches, patient's right on the viewer's
+  left, five-zone surface diagram per tooth, roots drawn; findings painted by surface, crown
+  or root; missing/extracted ghosted and crossed). Click or keyboard-select teeth; a side panel
+  shows the selection's actions (Add condition / Plan treatment / Record performed), current
+  findings (Resolve, Entered in error) and tooth history. Below: treatment plan list with
+  Schedule / Mark as performed / Cancel, and a legend.
+- **History tab** — patient-level timeline grouped by day; retracted entries struck through
+  with their reason.
+- **From an appointment** — the appointment sheet shows "Dental chart"; the chart then shows a
+  banner and pre-links new treatments to that appointment.
+- Narrow screens: the chart scrolls horizontally inside its card; the page itself never does.
+- Clinics page shows a Type column; the clinic form has Clinic type and (for dental) Tooth
+  numbering.

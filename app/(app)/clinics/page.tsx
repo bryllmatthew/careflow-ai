@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ClinicFormDialog } from "./clinic-form-dialog";
 import { ClinicsTable, type ClinicRow } from "./clinics-table";
+import { isClinicType } from "@/lib/clinic-types";
 
 export default async function ClinicsPage() {
   const auth = await getAuthContext();
@@ -17,15 +18,20 @@ export default async function ClinicsPage() {
   await requirePermission("clinic.view", { organizationId });
 
   const supabase = await getSupabaseServerClient();
-  const [{ data: clinics }, canCreate] = await Promise.all([
+  const [{ data: clinics }, { data: org }, canCreate] = await Promise.all([
     supabase
       .from("clinics")
-      .select("id, name, address, phone, email, timezone, status")
+      .select("id, name, address, phone, email, timezone, clinic_type, tooth_numbering, status")
       .eq("organization_id", organizationId)
       .is("deleted_at", null)
       .order("name"),
+    supabase.from("organizations").select("business_type").eq("id", organizationId).maybeSingle(),
     can("clinic.create", { organizationId }),
   ]);
+
+  // New clinics start as the organization's own type (what it chose at
+  // sign-up); each can be changed independently.
+  const defaultClinicType = isClinicType(org?.business_type) ? org.business_type : "other";
 
   // Per-clinic, not a single org-wide check: a clinic_manager can hold
   // clinic.update scoped to just one clinic (docs/AUTHORIZATION.md -- "Clinic
@@ -49,6 +55,7 @@ export default async function ClinicsPage() {
         actions={
           <PermissionGate allowed={canCreate}>
             <ClinicFormDialog
+              defaultClinicType={defaultClinicType}
               trigger={
                 <Button>
                   <Plus className="size-4" />
@@ -68,6 +75,7 @@ export default async function ClinicsPage() {
           action={
             <PermissionGate allowed={canCreate}>
               <ClinicFormDialog
+                defaultClinicType={defaultClinicType}
                 trigger={
                   <Button variant="outline" size="sm">
                     <Plus className="size-4" />

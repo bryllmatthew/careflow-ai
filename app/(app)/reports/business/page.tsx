@@ -101,7 +101,7 @@ export default async function BusinessReportsPage({
       />
 
       <UrlTabs defaultValue="appointments">
-        <TabsList className="flex-wrap">
+        <TabsList className="flex-wrap group-data-horizontal/tabs:h-auto">
           <TabsTrigger value="appointments">Appointments</TabsTrigger>
           <TabsTrigger value="patients">Patients</TabsTrigger>
           <TabsTrigger value="clinics">Clinics</TabsTrigger>

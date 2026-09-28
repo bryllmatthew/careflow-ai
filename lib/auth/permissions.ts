@@ -43,6 +43,10 @@ export const PERMISSIONS = [
   "booking.view",
   "booking.manage",
 
+  "dental.view",
+  "dental.record",
+  "dental.complete",
+
   "followups.view",
   "followups.create",
   "followups.manage",

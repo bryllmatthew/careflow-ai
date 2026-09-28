@@ -701,6 +701,7 @@ export type Database = {
       clinics: {
         Row: {
           address: string | null
+          clinic_type: string
           created_at: string
           deleted_at: string | null
           email: string | null
@@ -713,10 +714,12 @@ export type Database = {
           slug: string | null
           status: string
           timezone: string
+          tooth_numbering: string
           updated_at: string
         }
         Insert: {
           address?: string | null
+          clinic_type?: string
           created_at?: string
           deleted_at?: string | null
           email?: string | null
@@ -729,10 +732,12 @@ export type Database = {
           slug?: string | null
           status?: string
           timezone?: string
+          tooth_numbering?: string
           updated_at?: string
         }
         Update: {
           address?: string | null
+          clinic_type?: string
           created_at?: string
           deleted_at?: string | null
           email?: string | null
@@ -745,6 +750,7 @@ export type Database = {
           slug?: string | null
           status?: string
           timezone?: string
+          tooth_numbering?: string
           updated_at?: string
         }
         Relationships: [
@@ -754,6 +760,341 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      dental_conditions: {
+        Row: {
+          clinic_id: string
+          closed_at: string | null
+          closed_by: string | null
+          condition: string
+          created_at: string
+          id: string
+          noted_at: string
+          noted_by: string | null
+          notes: string | null
+          organization_id: string
+          patient_id: string
+          source_treatment_id: string | null
+          status: string
+          status_reason: string | null
+          surfaces: string[]
+          tooth_code: number
+          updated_at: string
+        }
+        Insert: {
+          clinic_id: string
+          closed_at?: string | null
+          closed_by?: string | null
+          condition: string
+          created_at?: string
+          id?: string
+          noted_at?: string
+          noted_by?: string | null
+          notes?: string | null
+          organization_id: string
+          patient_id: string
+          source_treatment_id?: string | null
+          status?: string
+          status_reason?: string | null
+          surfaces?: string[]
+          tooth_code: number
+          updated_at?: string
+        }
+        Update: {
+          clinic_id?: string
+          closed_at?: string | null
+          closed_by?: string | null
+          condition?: string
+          created_at?: string
+          id?: string
+          noted_at?: string
+          noted_by?: string | null
+          notes?: string | null
+          organization_id?: string
+          patient_id?: string
+          source_treatment_id?: string | null
+          status?: string
+          status_reason?: string | null
+          surfaces?: string[]
+          tooth_code?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dental_conditions_clinic_fk"
+            columns: ["clinic_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "dental_conditions_closed_by_fkey"
+            columns: ["closed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dental_conditions_noted_by_fkey"
+            columns: ["noted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dental_conditions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dental_conditions_patient_fk"
+            columns: ["patient_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "dental_conditions_source_fk"
+            columns: ["source_treatment_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "dental_treatments"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "dental_conditions_tooth_code_fkey"
+            columns: ["tooth_code"]
+            isOneToOne: false
+            referencedRelation: "dental_teeth"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      dental_teeth: {
+        Row: {
+          arch: string
+          code: number
+          dentition: string
+          name: string
+          position: number
+          side: string
+          tooth_class: string
+          universal: string
+        }
+        Insert: {
+          arch: string
+          code: number
+          dentition: string
+          name: string
+          position: number
+          side: string
+          tooth_class: string
+          universal: string
+        }
+        Update: {
+          arch?: string
+          code?: number
+          dentition?: string
+          name?: string
+          position?: number
+          side?: string
+          tooth_class?: string
+          universal?: string
+        }
+        Relationships: []
+      }
+      dental_treatment_teeth: {
+        Row: {
+          clinic_id: string
+          created_at: string
+          id: string
+          organization_id: string
+          surfaces: string[]
+          tooth_code: number
+          treatment_id: string
+        }
+        Insert: {
+          clinic_id: string
+          created_at?: string
+          id?: string
+          organization_id: string
+          surfaces?: string[]
+          tooth_code: number
+          treatment_id: string
+        }
+        Update: {
+          clinic_id?: string
+          created_at?: string
+          id?: string
+          organization_id?: string
+          surfaces?: string[]
+          tooth_code?: number
+          treatment_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dental_treatment_teeth_clinic_fk"
+            columns: ["clinic_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "dental_treatment_teeth_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dental_treatment_teeth_tooth_code_fkey"
+            columns: ["tooth_code"]
+            isOneToOne: false
+            referencedRelation: "dental_teeth"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "dental_treatment_teeth_treatment_fk"
+            columns: ["treatment_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "dental_treatments"
+            referencedColumns: ["id", "organization_id"]
+          },
+        ]
+      }
+      dental_treatments: {
+        Row: {
+          appointment_id: string | null
+          clinic_id: string
+          closed_at: string | null
+          closed_by: string | null
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          organization_id: string
+          patient_id: string
+          planned_at: string
+          planned_by: string | null
+          practitioner_id: string | null
+          procedure: string
+          resulting_condition: string | null
+          service_id: string | null
+          status: string
+          status_reason: string | null
+          updated_at: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          clinic_id: string
+          closed_at?: string | null
+          closed_by?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          organization_id: string
+          patient_id: string
+          planned_at?: string
+          planned_by?: string | null
+          practitioner_id?: string | null
+          procedure: string
+          resulting_condition?: string | null
+          service_id?: string | null
+          status?: string
+          status_reason?: string | null
+          updated_at?: string
+        }
+        Update: {
+          appointment_id?: string | null
+          clinic_id?: string
+          closed_at?: string | null
+          closed_by?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          organization_id?: string
+          patient_id?: string
+          planned_at?: string
+          planned_by?: string | null
+          practitioner_id?: string | null
+          procedure?: string
+          resulting_condition?: string | null
+          service_id?: string | null
+          status?: string
+          status_reason?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dental_treatments_appointment_fk"
+            columns: ["appointment_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "dental_treatments_clinic_fk"
+            columns: ["clinic_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "dental_treatments_closed_by_fkey"
+            columns: ["closed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dental_treatments_completed_by_fkey"
+            columns: ["completed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dental_treatments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dental_treatments_patient_fk"
+            columns: ["patient_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "dental_treatments_planned_by_fkey"
+            columns: ["planned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dental_treatments_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dental_treatments_service_fk"
+            columns: ["service_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id", "organization_id"]
           },
         ]
       }
@@ -2562,6 +2903,50 @@ export type Database = {
           p_start_at: string
         }
         Returns: Json
+      }
+      dental_close_treatment: {
+        Args: {
+          p_entered_in_error?: boolean
+          p_reason: string
+          p_treatment_id: string
+        }
+        Returns: undefined
+      }
+      dental_complete_treatment: {
+        Args: { p_notes?: string; p_treatment_id: string }
+        Returns: undefined
+      }
+      dental_plan_treatment: {
+        Args: {
+          p_appointment_id?: string
+          p_complete_now?: boolean
+          p_notes?: string
+          p_patient_id: string
+          p_practitioner_id?: string
+          p_procedure: string
+          p_resulting_condition?: string
+          p_service_id?: string
+          p_teeth: Json
+        }
+        Returns: string
+      }
+      dental_record_conditions: {
+        Args: {
+          p_condition: string
+          p_notes?: string
+          p_patient_id: string
+          p_surfaces?: string[]
+          p_tooth_codes: number[]
+        }
+        Returns: string[]
+      }
+      dental_schedule_treatment: {
+        Args: { p_appointment_id: string; p_treatment_id: string }
+        Returns: undefined
+      }
+      dental_set_condition_status: {
+        Args: { p_condition_id: string; p_reason?: string; p_status: string }
+        Returns: undefined
       }
       get_public_booking: { Args: { p_token: string }; Returns: Json }
       get_public_booking_availability: {

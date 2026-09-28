@@ -40,6 +40,8 @@ export async function createClinicAction(
     phone: parsed.data.phone ?? null,
     email: parsed.data.email ?? null,
     timezone: parsed.data.timezone,
+    clinic_type: parsed.data.clinicType,
+    tooth_numbering: parsed.data.toothNumbering,
   });
 
   if (error) {
@@ -71,10 +73,16 @@ export async function updateClinicAction(
       phone: parsed.data.phone ?? null,
       email: parsed.data.email ?? null,
       timezone: parsed.data.timezone,
+      clinic_type: parsed.data.clinicType,
+      tooth_numbering: parsed.data.toothNumbering,
     })
     .eq("id", clinicId);
 
   if (error) {
+    // The database refuses to re-type a clinic that holds dental records
+    // (clinics_guard_dental_type_change, migration 0025) -- its patients'
+    // dental history would otherwise become unreachable. Its message is
+    // already written for the person reading it.
     return { error: error.message };
   }
 

@@ -19,12 +19,14 @@ export function WeekView({
   canUpdate,
   canCancel,
   canReschedule,
+  canViewDental = false,
 }: {
   mondayKey: string;
   appointments: AppointmentRow[];
   canUpdate: boolean;
   canCancel: boolean;
   canReschedule: boolean;
+  canViewDental?: boolean;
 }) {
   const [selected, setSelected] = useState<AppointmentRow | null>(null);
   const today = todayKey();
@@ -79,6 +81,7 @@ export function WeekView({
         canUpdate={canUpdate}
         canCancel={canCancel}
         canReschedule={canReschedule}
+        canViewDental={canViewDental}
       />
     </div>
   );

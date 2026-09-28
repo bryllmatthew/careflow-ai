@@ -44,6 +44,7 @@ export default async function CalendarPage({
     canUpdate,
     canCancel,
     canReschedule,
+    canViewDental,
   ] = await Promise.all([
     listClinicOptions(organizationId),
     listPractitionerOptions(organizationId),
@@ -53,6 +54,7 @@ export default async function CalendarPage({
     can("appointments.update", { organizationId }),
     can("appointments.cancel", { organizationId }),
     can("appointments.reschedule", { organizationId }),
+    can("dental.view", { organizationId }),
   ]);
 
   return (
@@ -92,6 +94,7 @@ export default async function CalendarPage({
           canUpdate={canUpdate}
           canCancel={canCancel}
           canReschedule={canReschedule}
+          canViewDental={canViewDental}
         />
       ) : (
         <WeekView
@@ -100,6 +103,7 @@ export default async function CalendarPage({
           canUpdate={canUpdate}
           canCancel={canCancel}
           canReschedule={canReschedule}
+          canViewDental={canViewDental}
         />
       )}
     </div>

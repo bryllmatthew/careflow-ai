@@ -14,32 +14,57 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  CLINIC_TYPES,
+  CLINIC_TYPE_LABELS,
+  TOOTH_NUMBERING_SYSTEMS,
+  TOOTH_NUMBERING_LABELS,
+  clinicHasCapability,
+  type ClinicType,
+  type ToothNumbering,
+} from "@/lib/clinic-types";
 import { toast } from "sonner";
 import type { ClinicFormInput } from "@/lib/validation/clinic.schema";
 import { createClinicAction, updateClinicAction } from "./actions";
 
 type ClinicFormValues = ClinicFormInput;
 
-const emptyValues: ClinicFormValues = {
-  name: "",
-  address: "",
-  phone: "",
-  email: "",
-  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-};
+function emptyValues(defaultClinicType: ClinicType): ClinicFormValues {
+  return {
+    name: "",
+    address: "",
+    phone: "",
+    email: "",
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    clinicType: defaultClinicType,
+    toothNumbering: "fdi",
+  };
+}
 
 export function ClinicFormDialog({
   trigger,
   clinicId,
   initialValues,
+  defaultClinicType = "other",
 }: {
   trigger: ReactNode;
   /** Omit to create a new clinic; pass an id to edit an existing one. */
   clinicId?: string;
   initialValues?: ClinicFormValues;
+  /** A new clinic starts as the organization's own type -- most orgs are one kind. */
+  defaultClinicType?: ClinicType;
 }) {
   const [open, setOpen] = useState(false);
-  const [values, setValues] = useState<ClinicFormValues>(initialValues ?? emptyValues);
+  const [values, setValues] = useState<ClinicFormValues>(
+    initialValues ?? emptyValues(defaultClinicType),
+  );
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -48,7 +73,7 @@ export function ClinicFormDialog({
   function handleOpenChange(next: boolean) {
     setOpen(next);
     if (next) {
-      setValues(initialValues ?? emptyValues);
+      setValues(initialValues ?? emptyValues(defaultClinicType));
       setError(null);
     }
   }
@@ -139,6 +164,55 @@ export function ClinicFormDialog({
                 An IANA timezone, e.g. Asia/Manila or America/New_York.
               </p>
             </div>
+
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="clinic-type">Clinic type</Label>
+              <Select
+                value={values.clinicType}
+                onValueChange={(v) => setValues((s) => ({ ...s, clinicType: v as ClinicType }))}
+              >
+                <SelectTrigger id="clinic-type" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CLINIC_TYPES.map((t) => (
+                    <SelectItem key={t} value={t}>
+                      {CLINIC_TYPE_LABELS[t]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-muted-foreground text-sm">
+                Turns on tools for this kind of practice, such as tooth charting for dental clinics.
+              </p>
+            </div>
+
+            {/* Only meaningful where there is a dental chart to number. */}
+            {clinicHasCapability(values.clinicType, "dental") && (
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="clinic-tooth-numbering">Tooth numbering</Label>
+                <Select
+                  value={values.toothNumbering}
+                  onValueChange={(v) =>
+                    setValues((s) => ({ ...s, toothNumbering: v as ToothNumbering }))
+                  }
+                >
+                  <SelectTrigger id="clinic-tooth-numbering" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TOOTH_NUMBERING_SYSTEMS.map((n) => (
+                      <SelectItem key={n} value={n}>
+                        {TOOTH_NUMBERING_LABELS[n]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-muted-foreground text-sm">
+                  Changes how teeth are labelled on the chart. Existing records are unaffected.
+                </p>
+              </div>
+            )}
           </div>
 
           <DialogFooter>

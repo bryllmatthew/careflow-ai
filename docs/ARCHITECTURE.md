@@ -453,3 +453,23 @@ Provider interfaces are unchanged. A `StorageProvider` abstraction was **not** i
 clinic logos use Supabase Storage directly through the same RLS-respecting client everything
 else uses, and one bucket with three policies did not justify an interface with a single
 implementation.
+
+---
+
+## Addendum - clinic types and specialty modules
+
+Specialty functionality (dental first; aesthetic, therapy, medical later) is layered on the
+shared core through **capabilities**, not forks:
+
+- `clinics.clinic_type` records what a clinic is. `app.clinic_type_has_capability(type,
+  capability)` is the authoritative registry; `lib/clinic-types.ts` mirrors it for rendering.
+  A capability is a whole module (`"dental"`). Disagreement between the two fails closed.
+- A specialty table's RLS requires the permission **and** the capability on the row's clinic
+  (`app.capable_clinics()`), so the database — not the UI — decides where a module exists.
+- Specialty entities reference the shared core (patients, appointments, services, profiles,
+  audit_logs) and never duplicate it.
+- State machines, immutability and audit live in triggers so every write path obeys them;
+  multi-row writes are `SECURITY INVOKER` RPCs that derive tenancy from the patient.
+- A clinic holding a module's records cannot be re-typed out of that module.
+
+See `docs/modules/DENTAL.md` for the first module built this way.

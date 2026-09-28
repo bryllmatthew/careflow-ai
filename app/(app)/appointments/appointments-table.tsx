@@ -21,12 +21,14 @@ export function AppointmentsTable({
   canCancel,
   canReschedule,
   canCreateInvoice,
+  canViewDental,
 }: {
   appointments: AppointmentRow[];
   canUpdate: boolean;
   canCancel: boolean;
   canReschedule: boolean;
   canCreateInvoice?: boolean;
+  canViewDental?: boolean;
 }) {
   const [selected, setSelected] = useState<AppointmentRow | null>(null);
 
@@ -78,6 +80,7 @@ export function AppointmentsTable({
         onOpenChange={(open) => !open && setSelected(null)}
         canUpdate={canUpdate}
         canCreateInvoice={canCreateInvoice}
+        canViewDental={canViewDental}
         canCancel={canCancel}
         canReschedule={canReschedule}
       />

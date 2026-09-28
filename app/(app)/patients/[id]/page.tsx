@@ -15,7 +15,12 @@ import { PatientStatusBadge } from "@/components/patterns/patient-status-badge";
 import { Money } from "@/components/patterns/money";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { UrlTabs } from "@/components/patterns/url-tabs";
+import { getClinicDentalContext, getPatientDentalRecord, listTeeth } from "@/lib/dental/queries";
+import { buildHistory } from "@/lib/dental/chart";
+import { DentalChartPanel } from "@/components/dental/dental-chart-panel";
+import { DentalHistoryList } from "@/components/dental/dental-history-list";
 import { getPatientById, listClinicOptions, listPractitionerOptions } from "../queries";
 import { PatientQuickActions } from "../patient-quick-actions";
 import { PatientTimeline, buildPatientTimeline } from "../patient-timeline";
@@ -29,8 +34,15 @@ import { InvoicesTable } from "../../invoices/invoices-table";
 import { listPatientPayments, listPatientRefunds } from "../../payments/queries";
 import { PaymentsTable } from "../../payments/payments-table";
 
-export default async function PatientProfilePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function PatientProfilePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ appointment?: string }>;
+}) {
   const { id } = await params;
+  const { appointment: linkedAppointmentId } = await searchParams;
   const auth = await getAuthContext();
   const organizationId = auth!.memberships[0]!.organizationId;
 
@@ -87,6 +99,24 @@ export default async function PatientProfilePage({ params }: { params: Promise<{
     canViewPayments ? listPatientRefunds(patient.id) : Promise.resolve([]),
   ]);
 
+  // The dental module appears for a patient of a DENTAL clinic, to someone
+  // holding dental.view there. It is the patient's clinic that decides, not
+  // anything about the user: someone with access to a dental branch and an
+  // aesthetic branch sees a chart only on the dental branch's patients. This
+  // is the UI half; RLS refuses the same rows independently (migration 0025).
+  const dentalContext = await getClinicDentalContext(patient.clinicId);
+  const [canViewDental, canRecordDental, canCompleteDental] = dentalContext?.isDental
+    ? await Promise.all([
+        can("dental.view", { organizationId, clinicId: patient.clinicId }),
+        can("dental.record", { organizationId, clinicId: patient.clinicId }),
+        can("dental.complete", { organizationId, clinicId: patient.clinicId }),
+      ])
+    : [false, false, false];
+  const showDental = Boolean(dentalContext?.isDental && canViewDental);
+  const [teeth, dentalRecord] = showDental
+    ? await Promise.all([listTeeth(), getPatientDentalRecord(patient.id)])
+    : [[], { conditions: [], treatments: [] }];
+
   const shortId = patient.id.slice(-8).toUpperCase();
   const timeline = buildPatientTimeline(patient, followUps, invoices, payments, refunds);
   const upcomingFollowUps = followUps.filter(
@@ -135,9 +165,11 @@ export default async function PatientProfilePage({ params }: { params: Promise<{
         />
       </Card>
 
-      <Tabs defaultValue="overview">
-        <TabsList>
+      <UrlTabs defaultValue={showDental && linkedAppointmentId ? "dental" : "overview"}>
+        <TabsList className="flex-wrap group-data-horizontal/tabs:h-auto">
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          {showDental && <TabsTrigger value="dental">Dental Chart</TabsTrigger>}
+          {showDental && <TabsTrigger value="dental-history">Dental History</TabsTrigger>}
           <TabsTrigger value="appointments">Appointments</TabsTrigger>
           <TabsTrigger value="services">Services</TabsTrigger>
           <TabsTrigger value="invoices">Invoices</TabsTrigger>
@@ -186,6 +218,50 @@ export default async function PatientProfilePage({ params }: { params: Promise<{
           </div>
         </TabsContent>
 
+        {showDental && dentalContext && (
+          <TabsContent value="dental">
+            <DentalChartPanel
+              patientId={patient.id}
+              teeth={teeth}
+              numbering={dentalContext.toothNumbering}
+              conditions={dentalRecord.conditions}
+              treatments={dentalRecord.treatments}
+              appointments={appointments.map((a) => ({
+                id: a.id,
+                startAt: a.startAt,
+                serviceName: a.serviceName,
+                staffName: a.staffName,
+                status: a.status,
+              }))}
+              // The database only accepts a service from the patient's own clinic.
+              services={services
+                .filter((s) => s.clinicId === patient.clinicId)
+                .map((s) => ({ id: s.id, name: s.name }))}
+              practitioners={practitioners}
+              canRecord={canRecordDental}
+              canComplete={canCompleteDental}
+              linkedAppointmentId={
+                appointments.some((a) => a.id === linkedAppointmentId)
+                  ? linkedAppointmentId
+                  : undefined
+              }
+            />
+          </TabsContent>
+        )}
+
+        {showDental && dentalContext && (
+          <TabsContent value="dental-history">
+            <Card className="p-5">
+              <DentalHistoryList
+                events={buildHistory(dentalRecord.conditions, dentalRecord.treatments)}
+                teeth={teeth}
+                numbering={dentalContext.toothNumbering}
+                emptyText="No dental history recorded yet. Findings and treatments charted on the Dental Chart tab appear here."
+              />
+            </Card>
+          </TabsContent>
+        )}
+
         <TabsContent value="appointments">
           {appointments.length === 0 ? (
             <Card className="p-0">
@@ -202,6 +278,7 @@ export default async function PatientProfilePage({ params }: { params: Promise<{
                 canUpdate={canUpdateAppointment}
                 canCancel={canCancelAppointment}
                 canReschedule={canRescheduleAppointment}
+                canViewDental={showDental}
                 canCreateInvoice={canCreateAppointmentInvoice}
               />
             </Card>
@@ -313,7 +390,7 @@ export default async function PatientProfilePage({ params }: { params: Promise<{
             />
           </Card>
         </TabsContent>
-      </Tabs>
+      </UrlTabs>
     </div>
   );
 }

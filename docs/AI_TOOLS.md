@@ -525,3 +525,11 @@ Reports page uses -- so the assistant can never disagree with the dashboard. It 
 There is deliberately **no booking action tool**. Section 44's brief rules out autonomous AI
 booking, and a public booking carries patient-supplied contact details the assistant has no
 business inventing.
+
+## Dental module - no tool yet
+
+No AI tool reads dental data. Any future dental tool is **read-only**, gated on
+`dental.view` through the tool registry, and only retrieves and summarises recorded findings,
+treatments and history. It must never diagnose (decide a tooth has caries or needs
+extraction/root canal) or recommend treatment — §20 Medical Safety applies in full. See
+`docs/modules/DENTAL.md` §10.

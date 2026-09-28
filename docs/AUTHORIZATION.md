@@ -750,3 +750,32 @@ page rendered.
 anonymous table denial, cross-tenant service/practitioner injection through a valid slug,
 unpublished-service booking, disabled-clinic booking, forged start times, double-booking,
 and idempotent replay.
+
+## Addendum - dental module
+
+### Three new permissions
+
+| Permission | Allows | Default roles |
+| --- | --- | --- |
+| `dental.view` | Read chart, findings, treatments, history | owner, practitioner, admin, clinic_manager |
+| `dental.record` | Record findings; plan, schedule, cancel, correct treatments | owner, practitioner |
+| `dental.complete` | Sign off a treatment as performed | owner, practitioner |
+
+Receptionist, finance and inventory manager receive none (least privilege on a clinical
+record); a clinic may grant `dental.view` to front-desk staff through a custom role.
+
+### Enforcement
+
+Every dental policy requires, together: the permission for the row's clinic, the `dental`
+capability on that clinic (`app.capable_clinics('dental')`), and visibility of the patient
+under the patient table's own RLS — so `patients.view.assigned` narrows dental access too.
+Completion is checked again inside the trigger against `dental.complete`. The UI and server
+actions check the same conditions, but only for UX.
+
+### Negative matrix additions (`supabase/tests/dental_test.sql`)
+
+Unassigned patient (42501) · aesthetic-clinic patient, even for the owner (42501) ·
+receptionist and inventory manager read 0 rows / insert 42501 · other organization 0 rows /
+42501 · `dental.record` without `dental.complete` cannot complete · completed record edit
+(42501) · delete (42501) · appointment of another patient (23514) · re-typing a clinic with
+dental records (23514) · `anon` (42501).

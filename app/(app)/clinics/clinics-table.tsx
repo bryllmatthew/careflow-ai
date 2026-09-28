@@ -23,6 +23,7 @@ import { ConfirmDialog } from "@/components/patterns/confirm-dialog";
 import { toast } from "sonner";
 import { setClinicStatusAction, deleteClinicAction } from "./actions";
 import { ClinicFormDialog } from "./clinic-form-dialog";
+import { CLINIC_TYPE_LABELS, isClinicType } from "@/lib/clinic-types";
 
 export type ClinicRow = {
   id: string;
@@ -31,6 +32,8 @@ export type ClinicRow = {
   phone: string | null;
   email: string | null;
   timezone: string;
+  clinic_type: string;
+  tooth_numbering: string;
   status: string;
   canUpdate: boolean;
   canDelete: boolean;
@@ -56,6 +59,7 @@ export function ClinicsTable({ clinics }: { clinics: ClinicRow[] }) {
           <TableHead>Name</TableHead>
           <TableHead>Address</TableHead>
           <TableHead>Contact</TableHead>
+          <TableHead>Type</TableHead>
           <TableHead>Timezone</TableHead>
           <TableHead>Status</TableHead>
           <TableHead className="w-10" />
@@ -68,6 +72,11 @@ export function ClinicsTable({ clinics }: { clinics: ClinicRow[] }) {
             <TableCell className="text-muted-foreground">{clinic.address ?? "—"}</TableCell>
             <TableCell className="text-muted-foreground">
               {clinic.phone ?? clinic.email ?? "—"}
+            </TableCell>
+            <TableCell className="text-muted-foreground">
+              {isClinicType(clinic.clinic_type)
+                ? CLINIC_TYPE_LABELS[clinic.clinic_type]
+                : clinic.clinic_type}
             </TableCell>
             <TableCell className="text-muted-foreground">{clinic.timezone}</TableCell>
             <TableCell>
@@ -107,6 +116,11 @@ export function ClinicsTable({ clinics }: { clinics: ClinicRow[] }) {
                           phone: clinic.phone ?? "",
                           email: clinic.email ?? "",
                           timezone: clinic.timezone,
+                          clinicType: isClinicType(clinic.clinic_type)
+                            ? clinic.clinic_type
+                            : "other",
+                          toothNumbering:
+                            clinic.tooth_numbering === "universal" ? "universal" : "fdi",
                         }}
                         trigger={
                           <DropdownMenuItem onSelect={(e) => e.preventDefault()}>

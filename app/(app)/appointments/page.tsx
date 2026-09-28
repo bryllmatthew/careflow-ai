@@ -54,6 +54,7 @@ export default async function AppointmentsPage({
     canCancel,
     canReschedule,
     canCreateInvoice,
+    canViewDental,
   ] = await Promise.all([
     listAppointments(organizationId, filters),
     listClinicOptions(organizationId),
@@ -64,6 +65,7 @@ export default async function AppointmentsPage({
     can("appointments.cancel", { organizationId }),
     can("appointments.reschedule", { organizationId }),
     can("invoices.create", { organizationId }),
+    can("dental.view", { organizationId }),
   ]);
 
   const hasActiveFilters = Boolean(filters.clinicId || filters.status || filters.staffId);
@@ -137,6 +139,7 @@ export default async function AppointmentsPage({
             canCancel={canCancel}
             canReschedule={canReschedule}
             canCreateInvoice={canCreateInvoice}
+            canViewDental={canViewDental}
           />
           <Pagination
             page={filters.page ?? 1}
