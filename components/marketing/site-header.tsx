@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Logo } from "./brand";
+import { Logo } from "@/components/brand/logo";
 import { MobileNav } from "./mobile-nav";
 import { NAV_LINKS } from "./nav-links";
 
@@ -8,7 +8,7 @@ export function SiteHeader() {
   return (
     <header className="bg-background/75 [@supports(backdrop-filter:blur(0))]:border-border/60 sticky top-0 z-40 border-b border-transparent backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-6 px-4 sm:px-6">
-        <Logo />
+        <Logo href="/" />
         <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
           {NAV_LINKS.map((link) => (
             <a

@@ -25,7 +25,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { Logo } from "./brand";
+import { Logo } from "@/components/brand/logo";
 import {
   AestheticMock,
   AssistantBubble,
@@ -722,7 +722,7 @@ export function SiteFooter() {
     <footer className="border-t">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.5fr_repeat(3,1fr)]">
         <div>
-          <Logo />
+          <Logo href="/" />
           <p className="text-muted-foreground mt-4 max-w-xs text-sm">
             AI-assisted practice management for dental, medical and aesthetic clinics.
           </p>

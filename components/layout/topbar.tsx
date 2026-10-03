@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Menu, ChevronDown, LogOut } from "lucide-react";
+import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -48,7 +49,9 @@ export function Topbar({
         </SheetTrigger>
         <SheetContent side="left" className="w-72 p-0">
           <SheetHeader className="border-b px-4 py-3">
-            <SheetTitle className="text-left text-sm font-semibold">CareFlow AI</SheetTitle>
+            <SheetTitle className="text-left">
+              <Logo />
+            </SheetTitle>
           </SheetHeader>
           <SidebarNav
             visibleHrefs={visibleHrefs}

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Logo } from "@/components/brand/logo";
 import { SidebarNav } from "./sidebar-nav";
 import { Topbar } from "./topbar";
 
@@ -25,9 +26,8 @@ export function AppShell({
       {/* Desktop sidebar. Mobile gets the same nav inside Topbar's Sheet drawer
           rather than a second implementation. */}
       <aside className="bg-sidebar text-sidebar-foreground ring-foreground/[0.06] shadow-liquid hidden w-64 shrink-0 flex-col rounded-2xl ring-1 md:flex">
-        <div className="flex h-14 shrink-0 items-center gap-2 px-5 text-sm font-semibold">
-          <span className="bg-primary size-2.5 rounded-full" aria-hidden />
-          CareFlow AI
+        <div className="flex h-16 shrink-0 items-center px-4">
+          <Logo href="/dashboard" />
         </div>
         <SidebarNav visibleHrefs={visibleHrefs} badges={navBadges} />
       </aside>

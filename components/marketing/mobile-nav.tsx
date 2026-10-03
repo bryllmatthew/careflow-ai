@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Logo } from "@/components/brand/logo";
 import { NAV_LINKS } from "./nav-links";
 
 export function MobileNav() {
@@ -19,7 +20,9 @@ export function MobileNav() {
       </SheetTrigger>
       <SheetContent side="right" className="w-72">
         <SheetHeader>
-          <SheetTitle className="text-left">CareFlow AI</SheetTitle>
+          <SheetTitle className="text-left">
+            <Logo />
+          </SheetTitle>
         </SheetHeader>
         <nav aria-label="Mobile" className="flex flex-col gap-1 px-4">
           {NAV_LINKS.map((link) => (
